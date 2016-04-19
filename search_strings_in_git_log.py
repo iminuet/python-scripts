@@ -19,8 +19,8 @@ string_name = raw_input("Enter the IP block name: ")
 
 def get_commit_in_log_line(line):	#deal with one line at a time
 	if line[:7] == "commit ":
-		line = re.findall(r'(.{7})', line) #return every 6 chars
-		print(line[1] + "\n")
+		#line = re.findall(r'(.{7})', line) #return every 6 chars
+		return (str(line[7:14]))#else it returns "None".
 
 def get_commit_in_patch_line(in_file):
 	line = in_file.readline()     #just read the first line
@@ -34,7 +34,8 @@ def get_commit_in_patch_line(in_file):
 try:
 	loginfo = os.popen("git log").readlines()
 	for i in range(0, 10):
-		get_commit_in_log_line(loginfo[i])
+		if loginfo[i][:7] == "commit ":
+			print get_commit_in_log_line(loginfo[i])
 
 	count = 1
 	new_flag = 0
