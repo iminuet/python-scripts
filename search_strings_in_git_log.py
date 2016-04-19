@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os,re
+import os, re, time
 #File: search_strings_in_git_log.py
 #Goal: Use this script to find specified strings in git log such as
 #    " fman ", " nand " and kinds of IP blocks. Then it shows
@@ -10,13 +10,15 @@ import os,re
 #    unexpected commits.
 #
 #Status:
-#    Draft. Not work.
+#    Could work a bit.
 #
-f_old = None
-patch_content = []
+
 #keep track of the line numbers of current commit and next commit 
-cur_commit = 0
-next_commit = 0
+cur_commit_line = 0
+next_commit_line = 0
+#write the result to a new file named by the date:
+ISOTIMEFORMAT='%Y-%m-%d-%H-%M-%S'
+statistics_file = open(str(time.strftime(ISOTIMEFORMAT)), "w+")
 
 def get_commit_in_log_line(line):    #deal with one line at a time
     if line[:7] == "commit ":
@@ -32,31 +34,31 @@ def get_commit_in_patch_line(in_file):
     return
 
 def search_strings_in_log(log, key):#(string0,*argv):
-    for i in range(0, len(log)):#40 is the max length of the log
-        if log[i].find(key) > 0: ####if no that key,return -1;##########
-            print(log[i])
+    for i in range(len(log) - 1, 0, -1):#!!#search from the bottom of the log
+        if log[i].find(key) > 0: #!!#if no that key,return -1;##########
+	    print(log[i])
             for j in range(0, 20):#20*2 is an assumed length of one log
-                if loginfo[i + j][:7] == "commit ":
-                    next_commit =  i + j
-                    print get_commit_in_log_line(loginfo[next_commit])
-                    i = next_commit
-                    break
+                if log[i - j][:7] == "commit ":
+                    cur_commit_line =  i - j
+                    cur_commit_id = get_commit_in_log_line(log[cur_commit_line])
+                    i = cur_commit_line
+                    statistics_file.write(cur_commit_id + "|" + key +"|\n")
+		    break
+	elif i == 0:
+            print(" Search to TOP of the file!")
     return 
 
 #for each_new_file in new_patchset:
 try:
-    #Need to modify
-    lognum = 4
-    loginfo = os.popen("git log -" + str(lognum)).readlines()
-
-
     string_name = raw_input("Enter the IP block name: ")
+    print("==========================================================")
+    #Need to modify
+    lognum = 50
+    loginfo = os.popen("git log -" + str(lognum)).readlines()
     search_strings_in_log(loginfo, string_name)
 
-    count = 1
-    new_flag = 0
-    message_line_num = 0
+
     print("==========================================================")
 except:
     #pass
-    print("Error!")
+    print("Main Error!")
