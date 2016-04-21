@@ -10,7 +10,7 @@ import os, re, time
 #    unexpected commits.
 #
 #Status:
-#    Could work a bit.
+#    Seems to work well.
 #
 
 lognum = 29
