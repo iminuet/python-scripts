@@ -18,7 +18,7 @@ lognum = 29
 cur_commit_line = 0
 next_commit_line = 0
 #Need the generated file as the input:
-commit_file = open("./commit_patch.txt",\
+commit_file = open("ls1046_upstream_patch_preparing/commit_patch.txt",\
 "r").readlines()
 #write the result to a new file named by the date:
 ISOTIMEFORMAT='%Y-%m-%d-%H-%M-%S'
@@ -51,7 +51,7 @@ def search_strings_in_log(log, key):#(list,*argv):
                     mark_ip_in_stat(cur_commit_id, key)
                     break
         elif i == 1:
-            print(" Search to TOP of the file!")
+            print("[Search to TOP of the file!]")
     return 
 
 def mark_ip_in_stat(commit_id, ip_key):
@@ -59,7 +59,7 @@ def mark_ip_in_stat(commit_id, ip_key):
     #range includes (len(commit_file) - 1) itself
     for i in range(write_count, len(commit_file) - 1):
 	# if len(commit_file) = 29, then 0 ~ 28 is enough
-        print(str(i))
+        #print(str(i))
         each_line_list = commit_file[i].split(' ')
         #print(each_line_list)
         ##['10021', '764c05a\n'] or
@@ -82,14 +82,21 @@ def mark_ip_in_stat(commit_id, ip_key):
     return
 #for each_new_file in new_patchset:
 try:
-    string_name = raw_input("Enter the IP block name: ")
-    print("==========================================================")
     loginfo = os.popen("git log -" + str(lognum)).readlines()
-    search_strings_in_log(loginfo, string_name)
-    stat_file.writelines(commit_file)
-
-
+    #string_name = raw_input("Enter the IP block name: ")
+    try:
+        string_name = open("ip_list.txt","r").readlines()
+    except:
+	print("ip_list.txt open Error!")
     print("==========================================================")
+    for i in range(0, len(string_name) - 1):
+	if string_name[i] != '\n\n' and string_name[i][0] != '#':
+            #debug
+	    print(string_name[i])
+            search_strings_in_log(loginfo, string_name[i].strip())
+    print("==========================================================")
+    stat_file.writelines(commit_file)
+    stat_file.close()
 except:
     #pass
     print("Main Error!")
