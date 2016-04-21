@@ -13,6 +13,7 @@ import os, re, time
 #    Could work a bit.
 #
 
+lognum = 29
 #keep track of the line numbers of current commit and next commit 
 cur_commit_line = 0
 next_commit_line = 0
@@ -37,9 +38,9 @@ def get_commit_in_patch_line(in_file):
         f.write(my_line[1] + my_line[2]+ "\n")
     return
 
-def search_strings_in_log(log, key):#(string0,*argv):
+def search_strings_in_log(log, key):#(list,*argv):
     for i in range(len(log) - 1, 0, -1):#!!#search from the bottom of the log
-        if log[i].find(key) > 0: #!!#if no that key,return -1;##########
+        if log[i].upper().find(key.upper()) > 0: #!!#if no that key,return -1;##########
             print(log[i])
             for j in range(0, 20):#20*2 is an assumed length of one log
                 if log[i - j][:7] == "commit ":
@@ -55,7 +56,9 @@ def search_strings_in_log(log, key):#(string0,*argv):
 
 def mark_ip_in_stat(commit_id, ip_key):
     global write_count
-    for i in range(write_count, len(commit_file) + 1):
+    #range includes (len(commit_file) - 1) itself
+    for i in range(write_count, len(commit_file) - 1):
+	# if len(commit_file) = 29, then 0 ~ 28 is enough
         print(str(i))
         each_line_list = commit_file[i].split(' ')
         #print(each_line_list)
@@ -74,7 +77,6 @@ def mark_ip_in_stat(commit_id, ip_key):
             #commit_file[i] = ("").join(each_line_list)
             #stat_file.write(commit_file[i])
             print(commit_file[i])
-
 	    write_count = i + 1
 	    break
     return
@@ -82,8 +84,6 @@ def mark_ip_in_stat(commit_id, ip_key):
 try:
     string_name = raw_input("Enter the IP block name: ")
     print("==========================================================")
-    #Need to modify
-    lognum = 50
     loginfo = os.popen("git log -" + str(lognum)).readlines()
     search_strings_in_log(loginfo, string_name)
     stat_file.writelines(commit_file)
