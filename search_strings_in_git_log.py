@@ -93,6 +93,7 @@ try:
 	if string_name[i] != '\n\n' and string_name[i][0] != '#':
             #debug
 	    print(string_name[i])
+            write_count = 0
             search_strings_in_log(loginfo, string_name[i].strip())
     print("==========================================================")
     stat_file.writelines(commit_file)
