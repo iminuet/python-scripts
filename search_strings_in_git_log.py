@@ -30,7 +30,7 @@ def get_commit_in_log_line(line):    #deal with one line at a time
         #line = re.findall(r'(.{7})', line) #return every 6 chars
         return (str(line[7:14]))#else it returns "None".
 
-def get_commit_in_patch_line(in_file):
+def get_commit_from_patch_file(in_file):
     line = in_file.readline()     #just read the first line
     my_line = re.findall(r'(.{4})', line) #return every 4 chars
     if my_line[0] == "From":
