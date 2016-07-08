@@ -1,0 +1,4 @@
+LS1043RDB使用FMAN传输：
+setenv ethact FM1@DTSEC3;setenv ipaddr 10.193.20.129;setenv serverip 10.192.208.233;setenv ethaddr 00:e0:0c:00:77:00;setenv eth1addr 00:e0:0c:00:77:01;setenv eth2addr 00:e0:0c:00:77:02;setenv eth3addr 00:e0:0c:00:77:03;setenv eth4addr 00:e0:0c:00:77:04;setenv eth5addr 00:e0:0c:00:77:05;setenv eth6addr 00:e0:0c:00:77:06;setenv eth7addr 00:15:17:8a:c6:88
+LS1046RDB使用FMAN传输：
+setenv ethact FM1@DTSEC3;setenv ipaddr 10.193.20.129;setenv serverip 10.192.208.233;setenv ethaddr 00:e0:0c:00:89:00;setenv eth1addr 00:e0:0c:00:89:01;setenv eth2addr 00:e0:0c:00:89:02;setenv eth3addr 00:e0:0c:00:89:03;setenv eth4addr 00:e0:0c:00:89:04;setenv eth5addr 00:e0:0c:00:89:05;setenv eth6addr 00:e0:0c:00:89:06;setenv eth7addr 00:e0:0c:00:89:07

@@ -1,0 +1,60 @@
+===== NOR BOOT =================
+RCW:
+	tftp 82000000 <user_name>/<board_name>/<rcw_image>;
+	protect off all;erase 0x64000000 +$filesize;
+	cp.b 82000000 64000000 $filesize;
+	<cpld_or_qixis_command> altbank
+
+U-Boot:
+	tftp 82000000 <user_name>/<board_name>/<uboot_image>;
+	protect off all;erase 0x64100000 +$filesize;
+	cp.b 82000000 64100000 $filesize; 
+	<cpld_or_qixis_command> altbank
+
+===== NAND BOOT =================
+U-Boot:
+	tftp 82000000 <user_name>/<board_name>/<uboot_image>;
+	nand erase 0 100000;nand write 82000000 0 100000;
+	<cpld_or_qixis_command> nand
+
+Fman ucode:
+	tftp 83000000 <user_name>/fsl_fman_ucode_t2080_r1.1_106_4_15.bin;
+	nand erase 160000 20000;nand write 83000000 160000 20000;
+
+===== SD BOOT ===================
+U-Boot:
+	tftp 82000000 <user_name>/<board_name>/<uboot_image>;
+	mmc write 0x82000000 8 0x800;
+	<cpld_or_qixis_command> <sd_or_sd_qspi>
+
+Fman ucode:
+	tftp 83000000 <user_name>/fsl_fman_ucode_t2080_r1.1_106_4_15.bin
+	mmc write 83000000 820 50
+
+===== QSPI BOOT =================
+RCW:
+	tftp 81000000 <user_name>/<board_name>/<rcw_image>;
+	sf probe 0:1;sf erase 0 10000;
+	sf write 81000000 0 1000;
+	
+U-Boot:
+	tftp 82000000 <user_name>/<board_name>/<uboot_image>;
+	sf probe 0:1;sf erase 100000 +$filesize;
+	sf write 82000000 100000 $filesize;
+- LS1043A:
+	<cpld_or_qixis_command> qspi
+	
+- LS1046A:
+	<cpld_or_qixis_command> altbank
+	
+Fman Ucode:
+	tftp 83000000 <user_name>/fsl_fman_ucode_t2080_r1.1_106_4_15.bin
+- LS1043A:
+	sf erase d0000 10000;sf write 83000000 d0000 10000
+	
+- LS1046A:
+	sf erase 300000 40000;sf write 83000000 300000 10000
+=================================
+
+Linux:
+	tftp a0000000 <user_name>/<board_name>/kernel.itb.<board_name>;bootm a0000000
