@@ -7,11 +7,14 @@ import os,sys
 # Usage:
 # ./make_uboot.py <defconfig_name> (<server_name>) #TITAN is default
 #
+my_dict = {"gqy":"b52263", "hmk":"b21284", "hzq":"b48286", "swb":"b53747"}
+
+local_user = os.popen("env|grep -e 'LOGNAME=' ").read().split('=')[1][:-1]
+print("Default user: " + local_user)
 print_info = []
-user = "b52263"
-print("Default user CoreID: " + user)
 # Tech Using Python modules:
-# os.system(command): call shell commands
+# os.system(command): call shell commands but will return status code
+# os.popen(command): call shell commands but use .read() to get the content
 # sys.argv[0] is this script's name. len(sys.argv) contains script's name!
 # os._exit(), sys.exit(),os.kill(..)
 #
@@ -21,6 +24,10 @@ server_name = ''
 # 1.Type the right defconfig
 if len(sys.argv) < 2:
 	print("ERROR: Please assign a defconfig to build!\n")
+	print("[Usage]:")
+	print(" ./make_uboot.py <defconfig_name> (<server_name>)")
+	print("""- server options: titan, star/boardfarm, rhuath, \
+palladium/emulator.\n""")
 	os._exit()
 defconfig_name = sys.argv[1]
 print("get defconifg: " + defconfig_name)
@@ -44,19 +51,46 @@ boot_method = defconfig_name.split('_')[1]
 if server_name == '' or server_name.lower() == 'titan':
 	#titan is default local server, so no need remote_flag or ip_addr
 	remote_flag = ''
-	user = os.system("env|grep -e 'LOGNAME=' ").split('=')[1]
-	print("Change user name to: " + user)
-	#user = 'gqy'
-	ip_addr = ''
+	#ERROR:
+	#Traceback (most recent call last):
+	#File "./make_uboot.py", line 47, in <module>
+	#      user = os.system("env|grep -e 'LOGNAME=' ").split('=')[1]
+	#      AttributeError: 'int' object has no attribute 'split'
+	rev_dict = dict((v,k) for k,v in my_dict.items())
+	if rev_dict.has_key(local_user):
+		user = rev_dict[local_user]
+		remote_flag = 's'
+		ip_addr = '10.192.208.233'
+	else:
+		user = local_user #Name
+		ip_addr = ''
 elif server_name.lower() == 'rhuath':
-	remote_flag = 's'
-	ip_addr = user + '@10.81.117.101:'
-elif server_name.lower() == 'star':
-	remote_flag = 's'
-	ip_addr = user + '@10.192.208.10:'
+	if my_dict.has_key(local_user):
+		user = my_dict[local_user]
+		remote_flag = 's'
+		ip_addr = user + '@10.81.117.101:'
+		print("Change to remote user: " + user)
+	else:
+		user = local_user #CoreID
+		ip_addr = ''
+elif server_name.lower() == 'star' or  server_name.lower() == 'boardfarm':
+	if my_dict.has_key(local_user):
+		user = my_dict[local_user]
+		remote_flag = 's'
+		ip_addr = user + '@10.192.208.10:'
+		print("Change to remote user: " + user)
+	else:
+		user = local_user #CoreID
+		ip_addr = ''
 elif server_name.lower() == 'emulator' or  server_name.lower() == 'palladium':
-	remote_flag = 's'
-	ip_addr = user + '@10.112.101.66:'
+	if my_dict.has_key(local_user):
+		user = my_dict[local_user]
+		remote_flag = 's'
+		ip_addr = user + '@10.112.101.66:'
+		print("Change to remote user: " + user)
+	else:
+		user = local_user #CoreID
+		ip_addr = ''
 
 try:
 	if boot_method == "sdcard":
@@ -86,18 +120,21 @@ try:
 
 # NOTE: See if the board directory exists, go on; if not, create one.
 	path = "/tftpboot/" + user + "/" + board_name + "/"
-	local_path = "/tftpboot/gqy/" + board_name + "/"
+	local_path = "/tftpboot/" + local_user + "/" + board_name + "/"
 	if not os.path.exists(local_path):
-		print("creating a new directory at " + path)
+		print("creating a new directory at " + local_path)
        	#Create for local server
 		os.mkdir(local_path)
        	#Create copies for remote server
-	if user != "gqy":
-		print("scp -r " + local_path + " " + ip_addr + path)
-		os.system("scp -r " + local_path + " " + ip_addr + path)
+	if user != local_user:
+		print("Copy local directory " + local_path + " to " + ip_addr \
+		+ path)
+		os.system("scp -r --reply=yes " + local_path + " " + ip_addr \
+		+ path)
 except:
 	print("Shell commands get problems on server!\n")
 
+"""copy the u-boot image to /tftpboot/<user>/<board_name>/ """
 print("Copy " + uboot_image + " to " + path)
 os.system(remote_flag + "cp " + uboot_image + " " + ip_addr + path) 
 
