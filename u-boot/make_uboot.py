@@ -68,7 +68,7 @@ elif server_name.lower() == 'rhuath':
 	if my_dict.has_key(local_user):
 		user = my_dict[local_user]
 		remote_flag = 's'
-		ip_addr = user + '@10.81.117.101:'
+		ip_addr = user + '@10.81.117.102:'
 		print("Change to remote user: " + user)
 	else:
 		user = local_user #CoreID
