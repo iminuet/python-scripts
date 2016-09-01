@@ -93,7 +93,7 @@ elif server_name.lower() == 'emulator' or  server_name.lower() == 'palladium':
 		ip_addr = ''
 
 try:
-	if boot_method == "sdcard":
+	if boot_method == "sdcard" or boot_method == "emmc":
 		boot_name = "SD"
 		rcw_image = ""
 		uboot_image = 'u-boot-with-spl-pbl.bin'
