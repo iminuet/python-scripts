@@ -51,9 +51,11 @@ def get_diff_body(patch_file, start, end): #start/end pos in the patch file
 	#start line begins with "@@", so ignore it.
 	for i in range(start + 1, end):
 		if patch_file[i][0] == '+':
-			add_lines.append(patch_file[i][1:])
+			if patch_file[i][1] != '+':#if not begins with "+++"
+				add_lines.append(patch_file[i][1:])
 		elif patch_file[i][0] == '-':
-			drop_lines.append(patch_file[i][1:])
+			if patch_file[i][1] != '-':#if not begins with "---"
+				drop_lines.append(patch_file[i][1:])
 		else:
 			unchange_lines.append(patch_file[i])
 	print("add_lines:")
@@ -145,14 +147,14 @@ def compare_diff_lines_with_file(diff_num, add_lines, drop_lines, current_file):
 #main function
 patchset = []
 
-path = "./ls1046a_patch_list_test/"
+#path = "/home/gqy/stash/ls1046a-uboot/ls1046a_patch_list_test/"
+path = "./v_test_python/"
 
 patchset = os.listdir(path)
 patchset.sort()
 
 ISOTIMEFORMAT='%Y-%m-%d-%H-%M-%S'
 stat_file = open(str(time.strftime(ISOTIMEFORMAT)), "w+")
-
 for each_file in patchset:
 	diff_num_lines = []
 	diff_num_lines_num = []
@@ -178,9 +180,14 @@ for each_file in patchset:
 	print("diff num line num: ")
 	print(diff_num_lines_num)
 	count_num = 0
+	error_code = 0
 	stat_file.writelines(commit_id + "" + path + each_file + "\n")
 	for i in range(0, len(diff_file_lines)):
+		if error_code != 0:
+			break
 		diff_file = get_diff_file(diff_file_lines[i])
+		print("diff file is: ")
+		print(diff_file)
 		try:
 			f = open(diff_file)#should under u-boot direcory
 			f.close()
@@ -249,8 +256,8 @@ for each_file in patchset:
 				add_lines, drop_lines, diff_file)
 				print(str(error_code))
 				#stat_file.writelines(" "+ diff_file + "\n")
-				stat_file.writelines(str(error_code) + "\n")
 				if error_code != 0:
+					stat_file.writelines(str(error_code) + "\n")
 					break
 			else:
 				count_num = j;
