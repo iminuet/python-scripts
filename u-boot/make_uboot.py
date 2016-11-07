@@ -38,6 +38,7 @@ uboot_defconfigs.index(defconfig_name)
 
 # NOTE: 'defconfig_name' should be '<board_name>_<boot_method>_defconfig',
 # for example: ls1043aqds_sdcard_qspi_defconfig
+# how about "ls1046ardb_inpr_qspi_defconfig"?
 if len(sys.argv) == 3:#NOTE: so here should be 3!
 	server_name = sys.argv[2]
 	print("get server's name: " + server_name)
@@ -47,7 +48,6 @@ os.system("make -j22")
 print("Compile done! ..\n")
 # 3.Copy U-Boot to server
 board_name = defconfig_name.split('_')[0]
-boot_method = defconfig_name.split('_')[1]
 if server_name == '' or server_name.lower() == 'titan':
 	#titan is default local server, so no need remote_flag or ip_addr
 	remote_flag = ''
@@ -93,26 +93,30 @@ elif server_name.lower() == 'emulator' or  server_name.lower() == 'palladium':
 		ip_addr = ''
 
 try:
-	if boot_method == "sdcard" or boot_method == "emmc":
+	if defconfig_name.find("sdcard") != -1:
+		boot_method = "sdcard"
 		boot_name = "SD"
 		rcw_image = ""
 		uboot_image = 'u-boot-with-spl-pbl.bin'
-		if defconfig_name.split('_')[2] == "qspi":
+		if defconfig_name.find("qspi") != -1:
 			support = "qspi"
 		else:
 			support = ""
-	elif boot_method == "nand":
+	elif defconfig_name.find("nand") != -1:
+		boot_method = "nand"
 		boot_name = "NAND"
 		rcw_image = ""
 		uboot_image = 'u-boot-with-spl-pbl.bin'
 		support = ""
-	elif boot_method == "qspi":
+	elif defconfig_name.find("qspi") != -1:
+		boot_method = "qspi"
 		boot_name = "QSPI"
-		os.system("tclsh byte_swap.tcl u-boot-dtb.bin u-boot_swap.bin 8")	
+		#os.system("tclsh byte_swap.tcl u-boot-dtb.bin u-boot_swap.bin 8")
 		rcw_image = "rcw_qspi_1600_swap.bin"
-		uboot_image = 'u-boot_swap.bin'
+		uboot_image = 'u-boot-dtb.bin'
 		support = ""
 	else:#should be nor boot
+		boot_method = "nor"
 		boot_name = "NOR"
 		rcw_image = "rcw_1600.bin"
 		uboot_image = 'u-boot-dtb.bin'
