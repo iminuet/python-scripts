@@ -1,9 +1,0 @@
-make_uboot.py
-
-- Use to compile any supported U-Boot image
-  and copy the image to specific directory on specific server
-
-usage:
-
-$./make_uboot.py <board_name>_<boot_method>_defconfig <server_name>
-
