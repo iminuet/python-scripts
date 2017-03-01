@@ -1,0 +1,48 @@
+From 8b9c1e70760a76d942c71b3ba9b1f3aedabd5d1b Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Fri, 8 Apr 2016 18:28:34 +0800
+Subject: [PATCH 10019/10030] ls1046ardb: fix SPD parameters
+
+but not working still.
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ board/freescale/ls1046ardb/ddr.c | 4 ++--
+ board/freescale/ls1046ardb/ddr.h | 3 +--
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/board/freescale/ls1046ardb/ddr.c b/board/freescale/ls1046ardb/ddr.c
+index a29b6ea..76f3da8 100644
+--- a/board/freescale/ls1046ardb/ddr.c
++++ b/board/freescale/ls1046ardb/ddr.c
+@@ -89,8 +89,8 @@ found:
+ 	/* Enable ZQ calibration */
+ 	popts->zq_en = 1;
+ 
+-	popts->ddr_cdr1 = DDR_CDR1_DHC_EN | DDR_CDR1_ODT(DDR_CDR_ODT_80ohm);
+-	popts->ddr_cdr2 = DDR_CDR2_ODT(DDR_CDR_ODT_80ohm) |
++	popts->ddr_cdr1 = DDR_CDR1_DHC_EN | DDR_CDR1_ODT(DDR_CDR_ODT_100ohm);
++	popts->ddr_cdr2 = DDR_CDR2_ODT(DDR_CDR_ODT_100ohm) |
+ 			  DDR_CDR2_VREF_OVRD(70);	/* Vref = 70% */
+ }
+ 
+diff --git a/board/freescale/ls1046ardb/ddr.h b/board/freescale/ls1046ardb/ddr.h
+index eb771dc..78d6c4f 100644
+--- a/board/freescale/ls1046ardb/ddr.h
++++ b/board/freescale/ls1046ardb/ddr.h
+@@ -30,10 +30,9 @@ static const struct board_specific_parameters udimm0[] = {
+ 	 *   num|  hi| rank|  clk| wrlvl |   wrlvl   |  wrlvl
+ 	 * ranks| mhz| GB  |adjst| start |   ctl2    |  ctl3
+ 	 */
+-	{2,  1666, 0, 12,    7, 0x0808090B, 0x0C0D0E0A,},
++	{2,  1666, 0, 6,    13, 0x0C0B0A07, 0x07070709,},
+ 	{2,  1900, 0, 4,     6, 0x08080A0C, 0x0D0E0F0A,},
+ 	{2,  2300, 0, 4,     5, 0x8675F60B, 0x0A090807,},
+-	{2,  2666, 0, 4,     6, 0x0C0B0A07, 0x07070709,},
+ 	{}
+ };
+ 
+-- 
+2.1.0.27.g96db324
+

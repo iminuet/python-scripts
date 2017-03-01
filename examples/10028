@@ -1,0 +1,50 @@
+From 83e5e37785325b2ec19114a1db7fd4f72a598dce Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Tue, 12 Apr 2016 19:09:22 +0800
+Subject: [PATCH 10028/10030] ls1046ardb: cpld shift change to 16
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ include/configs/ls1046ardb.h | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/include/configs/ls1046ardb.h b/include/configs/ls1046ardb.h
+index 19a0374..25f75eb 100644
+--- a/include/configs/ls1046ardb.h
++++ b/include/configs/ls1046ardb.h
+@@ -123,11 +123,10 @@
+ 					CSPR_MSEL_GPCM | \
+ 					CSPR_V)
+ #define CONFIG_SYS_CPLD_AMASK		IFC_AMASK(64 * 1024)
+-#define CONFIG_SYS_CPLD_CSOR		(CSOR_NOR_ADM_SHIFT(4) | \
+-					CSOR_NOR_NOR_MODE_AVD_NOR | \
+-					CSOR_NOR_TRHZ_80)
++#define CONFIG_SYS_CPLD_CSOR		CSOR_NOR_ADM_SHIFT(16)
+ 
+ /* CPLD Timing parameters for IFC GPCM */
++#if 0
+ #define CONFIG_SYS_CPLD_FTIM0		(FTIM0_GPCM_TACSE(0xf) | \
+ 					FTIM0_GPCM_TEADC(0xf) | \
+ 					FTIM0_GPCM_TEAHC(0xf))
+@@ -137,6 +136,17 @@
+ 					FTIM2_GPCM_TCH(0xf) | \
+ 					FTIM2_GPCM_TWP(0xff))
+ #define CONFIG_SYS_CPLD_FTIM3		0x0
++#else
++#define CONFIG_SYS_CPLD_FTIM0		(FTIM0_GPCM_TACSE(0x0e) | \
++					FTIM0_GPCM_TEADC(0x0e) | \
++					FTIM0_GPCM_TEAHC(0x0e))
++#define CONFIG_SYS_CPLD_FTIM1		(FTIM1_GPCM_TACO(0xff) | \
++					FTIM1_GPCM_TRAD(0x3f))
++#define CONFIG_SYS_CPLD_FTIM2		(FTIM2_GPCM_TCS(0xf) | \
++					FTIM2_GPCM_TCH(0xf) | \
++					FTIM2_GPCM_TWP(0x3E))
++#define CONFIG_SYS_CPLD_FTIM3		0x0
++#endif
+ 
+ /* IFC Timing Params */
+ #define CONFIG_SYS_CSPR0_EXT		CONFIG_SYS_NAND_CSPR_EXT
+-- 
+2.1.0.27.g96db324
+

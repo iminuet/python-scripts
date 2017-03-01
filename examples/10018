@@ -1,0 +1,65 @@
+From 37e33dea3afb65ad0cd7bb55abe12981e526dae4 Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Fri, 8 Apr 2016 18:27:28 +0800
+Subject: [PATCH 10018/10030] armv8/ls1046a: Add workaround for DDR erratum
+ A-008850
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ board/freescale/ls1046ardb/ddr.c        | 2 ++
+ board/freescale/ls1046ardb/ddr.h        | 2 ++
+ board/freescale/ls1046ardb/ls1046ardb.c | 7 -------
+ 3 files changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/board/freescale/ls1046ardb/ddr.c b/board/freescale/ls1046ardb/ddr.c
+index 6979ab1..a29b6ea 100644
+--- a/board/freescale/ls1046ardb/ddr.c
++++ b/board/freescale/ls1046ardb/ddr.c
+@@ -234,6 +234,8 @@ phys_size_t initdram(int board_type)
+ #endif
+ #endif
+ 
++	erratum_a008850_post();
++
+ 	return dram_size;
+ }
+ 
+diff --git a/board/freescale/ls1046ardb/ddr.h b/board/freescale/ls1046ardb/ddr.h
+index e456bb3..eb771dc 100644
+--- a/board/freescale/ls1046ardb/ddr.h
++++ b/board/freescale/ls1046ardb/ddr.h
+@@ -7,6 +7,8 @@
+ #ifndef __DDR_H__
+ #define __DDR_H__
+ 
++extern void erratum_a008850_post(void);
++
+ struct board_specific_parameters {
+ 	u32 n_ranks;
+ 	u32 datarate_mhz_high;
+diff --git a/board/freescale/ls1046ardb/ls1046ardb.c b/board/freescale/ls1046ardb/ls1046ardb.c
+index c4dda7e..3234935 100644
+--- a/board/freescale/ls1046ardb/ls1046ardb.c
++++ b/board/freescale/ls1046ardb/ls1046ardb.c
+@@ -90,17 +90,10 @@ int board_early_init_f(void)
+ 
+ int board_init(void)
+ {
+-	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
+ #ifdef CONFIG_FSL_LS_PPA
+ 	u64 ppa_entry;
+ #endif
+ 
+-	/*
+-	 * Set CCI-400 control override register to enable barrier
+-	 * transaction
+-	 */
+-	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
+-
+ #ifdef CONFIG_FSL_IFC
+ 	init_final_memctl_regs();
+ #endif
+-- 
+2.1.0.27.g96db324
+

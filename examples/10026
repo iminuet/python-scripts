@@ -1,0 +1,41 @@
+From 152585e47e5a7b8263a6845fbea2a071387a8bbf Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Tue, 12 Apr 2016 15:37:57 +0800
+Subject: [PATCH 10026/10030] ls1046ardb: add second QSPI flash node
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ arch/arm/dts/fsl-ls1046a-rdb.dts | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/fsl-ls1046a-rdb.dts b/arch/arm/dts/fsl-ls1046a-rdb.dts
+index 29c6d5a..69840fa 100644
+--- a/arch/arm/dts/fsl-ls1046a-rdb.dts
++++ b/arch/arm/dts/fsl-ls1046a-rdb.dts
+@@ -41,13 +41,21 @@
+ 	bus-num = <0>;
+ 	status = "okay";
+ 
+-	qflash0: s25fs512s {
++	qflash0: s25fs512s@0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		compatible = "spi-flash";
+ 		spi-max-frequency = <50000000>;
+ 		reg = <0>;
+ 	};
++
++	qflash1: s25fs256s@1 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "spi-flash";
++		spi-max-frequency = <50000000>;
++		reg = <1>;
++	 };
+ };
+ 
+ &i2c0 {
+-- 
+2.1.0.27.g96db324
+

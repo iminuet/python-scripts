@@ -1,0 +1,27 @@
+From b611eaf54a2f701d0dcad4de54608222686cd1da Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Wed, 6 Apr 2016 16:54:57 +0800
+Subject: [PATCH 10004/10030] ls1046ardb: fix AQR106 PHY address
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ include/configs/ls1046ardb.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/ls1046ardb.h b/include/configs/ls1046ardb.h
+index 4e069a6..93aed42 100644
+--- a/include/configs/ls1046ardb.h
++++ b/include/configs/ls1046ardb.h
+@@ -197,7 +197,7 @@
+ #define SGMII_PHY1_ADDR			0x3
+ #define SGMII_PHY2_ADDR			0x4
+ 
+-#define FM1_10GEC1_PHY_ADDR		0x1
++#define FM1_10GEC1_PHY_ADDR		0x0
+ 
+ #define CONFIG_ETHPRIME			"FM1@DTSEC3"
+ #endif
+-- 
+2.1.0.27.g96db324
+

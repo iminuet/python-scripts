@@ -1,0 +1,26 @@
+From 18da16ceca37a5321d40278457917ca88ea120eb Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Tue, 12 Apr 2016 13:37:36 +0800
+Subject: [PATCH 10025/10030] origin timing
+
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ board/freescale/ls1046ardb/ddr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/board/freescale/ls1046ardb/ddr.c b/board/freescale/ls1046ardb/ddr.c
+index 14d365e..e58667d 100644
+--- a/board/freescale/ls1046ardb/ddr.c
++++ b/board/freescale/ls1046ardb/ddr.c
+@@ -95,7 +95,7 @@ found:
+ }
+ 
+ #ifdef CONFIG_DDR_FIXED_TIMING
+-#define CONFIG_DDR_DUAL_BANK
++#undef CONFIG_DDR_DUAL_BANK
+ #undef CONFIG_DDR_SINGLE_BANK
+ /*
+  * print_fsl_memctl_config_regs(&ddr_cfg_regs)
+-- 
+2.1.0.27.g96db324
+

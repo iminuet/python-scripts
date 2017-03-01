@@ -1,0 +1,58 @@
+From 18fad4dd8528ca3cb1288852efcc28d7935d2687 Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Thu, 7 Apr 2016 17:22:00 +0800
+Subject: [PATCH 10010/10030] ls1046ardb: fix CPLD chip select
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ arch/arm/dts/fsl-ls1046a-rdb.dts |  4 ++--
+ include/configs/ls1046ardb.h     | 16 ++++++++--------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/dts/fsl-ls1046a-rdb.dts b/arch/arm/dts/fsl-ls1046a-rdb.dts
+index 5b79ecf..29c6d5a 100644
+--- a/arch/arm/dts/fsl-ls1046a-rdb.dts
++++ b/arch/arm/dts/fsl-ls1046a-rdb.dts
+@@ -90,9 +90,9 @@
+ 			reg = <0x0 0x0 0x10000>;
+ 		};
+ 
+-		cpld: board-control@1,0 {
++		cpld: board-control@3,0 {
+ 			compatible = "fsl,ls1046ardb-cpld";
+-			reg = <0x1 0x0 0x0000100>;
++			reg = <0x3 0x0 0x0000100>;
+ 		};
+ };
+ 
+diff --git a/include/configs/ls1046ardb.h b/include/configs/ls1046ardb.h
+index f1acd3b..d17e7ed 100644
+--- a/include/configs/ls1046ardb.h
++++ b/include/configs/ls1046ardb.h
+@@ -145,14 +145,14 @@
+ #define CONFIG_SYS_CS0_FTIM2		CONFIG_SYS_NAND_FTIM2
+ #define CONFIG_SYS_CS0_FTIM3		CONFIG_SYS_NAND_FTIM3
+ 
+-#define CONFIG_SYS_CSPR1_EXT		CONFIG_SYS_CPLD_CSPR_EXT
+-#define CONFIG_SYS_CSPR1		CONFIG_SYS_CPLD_CSPR
+-#define CONFIG_SYS_AMASK1		CONFIG_SYS_CPLD_AMASK
+-#define CONFIG_SYS_CSOR1		CONFIG_SYS_CPLD_CSOR
+-#define CONFIG_SYS_CS1_FTIM0		CONFIG_SYS_CPLD_FTIM0
+-#define CONFIG_SYS_CS1_FTIM1		CONFIG_SYS_CPLD_FTIM1
+-#define CONFIG_SYS_CS1_FTIM2		CONFIG_SYS_CPLD_FTIM2
+-#define CONFIG_SYS_CS1_FTIM3		CONFIG_SYS_CPLD_FTIM3
++#define CONFIG_SYS_CSPR3_EXT		CONFIG_SYS_CPLD_CSPR_EXT
++#define CONFIG_SYS_CSPR3		CONFIG_SYS_CPLD_CSPR
++#define CONFIG_SYS_AMASK3		CONFIG_SYS_CPLD_AMASK
++#define CONFIG_SYS_CSOR3		CONFIG_SYS_CPLD_CSOR
++#define CONFIG_SYS_CS3_FTIM0		CONFIG_SYS_CPLD_FTIM0
++#define CONFIG_SYS_CS3_FTIM1		CONFIG_SYS_CPLD_FTIM1
++#define CONFIG_SYS_CS3_FTIM2		CONFIG_SYS_CPLD_FTIM2
++#define CONFIG_SYS_CS3_FTIM3		CONFIG_SYS_CPLD_FTIM3
+ 
+ /* EEPROM */
+ #define CONFIG_ID_EEPROM
+-- 
+2.1.0.27.g96db324
+

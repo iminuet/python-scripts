@@ -1,0 +1,25 @@
+From 994e9ef842d4dd3ae93361b73e2010d340404e78 Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Mon, 11 Apr 2016 22:19:15 +0800
+Subject: [PATCH 10022/10030] sata
+
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ drivers/block/ahci.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/block/ahci.c b/drivers/block/ahci.c
+index 5efa821..f8b0b87 100644
+--- a/drivers/block/ahci.c
++++ b/drivers/block/ahci.c
+@@ -1005,6 +1005,7 @@ static int ata_io_flush(u8 port)
+ 
+ 	memcpy((unsigned char *)pp->cmd_tbl, fis, 20);
+ 	ahci_fill_cmd_slot(pp, cmd_fis_len);
++	ahci_dcache_flush_sata_cmd(pp);
+ 	writel_with_flush(1, port_mmio + PORT_CMD_ISSUE);
+ 
+ 	if (waiting_for_cmd_completed(port_mmio + PORT_CMD_ISSUE,
+-- 
+2.1.0.27.g96db324
+

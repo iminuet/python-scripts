@@ -1,0 +1,38 @@
+From b950b11f87e119ad1aa7f0cde7d8cffea9949ab8 Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Mon, 11 Apr 2016 18:27:43 +0800
+Subject: [PATCH 10023/10030] ls1046ardb: refine SATA timing
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ board/freescale/ls1046ardb/ls1046ardb_pbi.cfg | 2 ++
+ include/configs/ls1046ardb.h                  | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/board/freescale/ls1046ardb/ls1046ardb_pbi.cfg b/board/freescale/ls1046ardb/ls1046ardb_pbi.cfg
+index f072274..044cabd 100644
+--- a/board/freescale/ls1046ardb/ls1046ardb_pbi.cfg
++++ b/board/freescale/ls1046ardb/ls1046ardb_pbi.cfg
+@@ -12,3 +12,5 @@
+ 09570420 0000009e
+ #flush PBI data
+ 096100c0 000fffff
++#Serdes SATA
++09ea08dc 0x00502880
+diff --git a/include/configs/ls1046ardb.h b/include/configs/ls1046ardb.h
+index 72a3ffb..19a0374 100644
+--- a/include/configs/ls1046ardb.h
++++ b/include/configs/ls1046ardb.h
+@@ -57,7 +57,7 @@
+ #endif
+ 
+ #ifdef CONFIG_SD_BOOT
+-#define CONFIG_SYS_FSL_PBL_RCW board/freescale/ls1046ardb/ls1046ardb_rcw_sd_nor.cfg
++#define CONFIG_SYS_FSL_PBL_RCW board/freescale/ls1046ardb/ls1046ardb_rcw_sd_sata.cfg
+ #endif
+ 
+ /* No NOR flash */
+-- 
+2.1.0.27.g96db324
+

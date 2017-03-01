@@ -1,0 +1,58 @@
+From 0584e999ac00af91a30908d83f5d3134368bee53 Mon Sep 17 00:00:00 2001
+From: Gong Qianyu <Qianyu.Gong@nxp.com>
+Date: Wed, 6 Apr 2016 17:23:06 +0800
+Subject: [PATCH 10005/10030] armv8/ls1046ardb: add RCW for SD boot with sata
+ support
+
+In order to test SG2 and SATA using protcol 3358.
+
+SerDes 3358:
+-----------------------------------------------------------------
+|			SerDes1					|
+-----------------------------------------------------------------
+| Lane0 |       | Lane1 |       |       | Lane2 |       | Lane3 |
+| LaneA |       | LaneB |       |       | LaneC |       | LaneD |
+-----------------------------------------------------------------
+| SG9   |       | SG2   |       |       | PCIe2 |       | SATA  |
+-----------------------------------------------------------------
+
+SG9 MDIO could be tested. ping could not be tested since the Lane0
+is routed to XFI on ls1046ardb board.
+
+Need the following change:
+1. Change SW4[5] to low to select the sd1_clk to 100MHz.
+2. Change the rcw used as follows:
+
+ --- a/include/configs/ls1046ardb.h
+ +++ b/include/configs/ls1046ardb.h
+ @@ -56,7 +56,7 @@
+  #endif
+
+  #ifdef CONFIG_SD_BOOT
+ -#define CONFIG_SYS_FSL_PBL_RCW board/freescale/ls1046ardb/ls1046ardb_rcw_sd.cfg
+ +#define CONFIG_SYS_FSL_PBL_RCW board/freescale/ls1046ardb/ls1046ardb_rcw_sd_sata.cfg
+  #endif
+
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+---
+ board/freescale/ls1046ardb/ls1046ardb_rcw_sd_sata.cfg | 7 +++++++
+ 1 file changed, 7 insertions(+)
+ create mode 100644 board/freescale/ls1046ardb/ls1046ardb_rcw_sd_sata.cfg
+
+diff --git a/board/freescale/ls1046ardb/ls1046ardb_rcw_sd_sata.cfg b/board/freescale/ls1046ardb/ls1046ardb_rcw_sd_sata.cfg
+new file mode 100644
+index 0000000..96a7657
+--- /dev/null
++++ b/board/freescale/ls1046ardb/ls1046ardb_rcw_sd_sata.cfg
+@@ -0,0 +1,7 @@
++#PBL preamble and RCW header
++aa55aa55 01ee0100
++# RCW
++08100010 0a000000 00000000 00000000
++33580002 00004012 60040000 c1002000
++00000000 00000000 00000000 00038800
++20124000 00001100 00000096 00000001
+-- 
+2.1.0.27.g96db324
+

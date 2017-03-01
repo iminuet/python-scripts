@@ -1,0 +1,42 @@
+From f7ff755b4e85238ae967d1597f2ccdd45cb4b9f5 Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Thu, 7 Apr 2016 15:53:26 +0800
+Subject: [PATCH 10008/10030] ls1046ardb: add ls1046ardb_rcw_sd_nor
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ board/freescale/ls1046ardb/ls1046ardb_rcw_sd_nor.cfg | 7 +++++++
+ include/configs/ls1046ardb.h                         | 2 +-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+ create mode 100644 board/freescale/ls1046ardb/ls1046ardb_rcw_sd_nor.cfg
+
+diff --git a/board/freescale/ls1046ardb/ls1046ardb_rcw_sd_nor.cfg b/board/freescale/ls1046ardb/ls1046ardb_rcw_sd_nor.cfg
+new file mode 100644
+index 0000000..1d4993a
+--- /dev/null
++++ b/board/freescale/ls1046ardb/ls1046ardb_rcw_sd_nor.cfg
+@@ -0,0 +1,7 @@
++#PBL preamble and RCW header
++aa55aa55 01ee0100
++# RCW
++08100010 0a000000 00000000 00000000
++14550002 80004012 60040000 c1002000
++00000000 00000000 00000000 00038800
++00000000 00003100 00000096 00000001
+diff --git a/include/configs/ls1046ardb.h b/include/configs/ls1046ardb.h
+index 93aed42..5f44e7a 100644
+--- a/include/configs/ls1046ardb.h
++++ b/include/configs/ls1046ardb.h
+@@ -54,7 +54,7 @@
+ #endif
+ 
+ #ifdef CONFIG_SD_BOOT
+-#define CONFIG_SYS_FSL_PBL_RCW board/freescale/ls1046ardb/ls1046ardb_rcw_sd.cfg
++#define CONFIG_SYS_FSL_PBL_RCW board/freescale/ls1046ardb/ls1046ardb_rcw_sd_nor.cfg
+ #endif
+ 
+ /* No NOR flash */
+-- 
+2.1.0.27.g96db324
+

@@ -1,0 +1,45 @@
+From 59f3d44fada22a45880b86248ba495a5a874ffab Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Tue, 12 Apr 2016 22:53:39 +0800
+Subject: [PATCH 10029/10030] ls1046ardb: fix QSPI dts
+
+=> sf probe 0:1
+flash_num = 0x2
+num_chipselect = 0x4
+fsl_qspi_ofdata_to_platdata: regs=<0x1550000> <0x40000000, 0x10000000>,
+max-frequency=50000000, endianess=be
+amba_size_per_chip = 0x4000000
+priv->amba_bases[0] = 0x40000000
+priv->amba_bases[1] = 0x44000000
+priv->amba_bases[2] = 0x48000000
+priv->amba_bases[3] = 0x4c000000
+amba_size_per_chip  = 0x4000000
+spi_flash_std_probe: slave=0000000080c2db30, cs=1
+SF: Detected S25FL512S_256K with page size 512 Bytes, erase size 256
+KiB, total 64 MiB
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ arch/arm/dts/fsl-ls1046a.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/dts/fsl-ls1046a.dtsi b/arch/arm/dts/fsl-ls1046a.dtsi
+index 757ea7b..a9ed637 100644
+--- a/arch/arm/dts/fsl-ls1046a.dtsi
++++ b/arch/arm/dts/fsl-ls1046a.dtsi
+@@ -188,9 +188,9 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0x0 0x1550000 0x0 0x10000>,
+-				<0x0 0x40000000 0x0 0x4000000>;
++				<0x0 0x40000000 0x0 0x10000000>;
+ 			reg-names = "QuadSPI", "QuadSPI-memory";
+-			num-cs = <2>;
++			num-cs = <4>;
+ 			big-endian;
+ 			status = "disabled";
+ 		};
+-- 
+2.1.0.27.g96db324
+

@@ -1,0 +1,209 @@
+From ab7b73392a73342503fc2ba76fb2795143d5dc7e Mon Sep 17 00:00:00 2001
+From: Shengzhou Liu <Shengzhou.Liu@nxp.com>
+Date: Thu, 7 Apr 2016 16:44:15 +0800
+Subject: [PATCH 10017/10030] armv8/ls1043: Add workaround for DDR erratum
+ A-008850
+
+Barrier transactions from CCI400 need to be disabled till
+the DDR is configured, otherwise it may lead to system hang.
+The patch adds workaround to fix the erratum.
+
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ arch/arm/cpu/armv8/fsl-layerscape/soc.c           | 36 +++++++++++++++++++++++
+ arch/arm/include/asm/arch-fsl-layerscape/config.h |  2 ++
+ board/freescale/ls1043aqds/ddr.c                  |  1 +
+ board/freescale/ls1043aqds/ddr.h                  |  2 ++
+ board/freescale/ls1043aqds/ls1043aqds.c           |  8 -----
+ board/freescale/ls1043ardb/ddr.c                  |  2 ++
+ board/freescale/ls1043ardb/ddr.h                  |  3 ++
+ board/freescale/ls1043ardb/ls1043ardb.c           |  7 -----
+ include/fsl_ddr_sdram.h                           |  4 +++
+ 9 files changed, 50 insertions(+), 15 deletions(-)
+
+diff --git a/arch/arm/cpu/armv8/fsl-layerscape/soc.c b/arch/arm/cpu/armv8/fsl-layerscape/soc.c
+index d7a3fa7..92dcb72 100644
+--- a/arch/arm/cpu/armv8/fsl-layerscape/soc.c
++++ b/arch/arm/cpu/armv8/fsl-layerscape/soc.c
+@@ -12,6 +12,8 @@
+ #include <asm/io.h>
+ #include <asm/global_data.h>
+ #include <asm/arch-fsl-layerscape/config.h>
++#include <fsl_ddr_sdram.h>
++#include <fsl_ddr.h>
+ #ifdef CONFIG_CHAIN_OF_TRUST
+ #include <fsl_validate.h>
+ #endif
+@@ -355,6 +357,39 @@ static void erratum_a009660(void)
+ #endif
+ }
+ 
++static void erratum_a008850_early(void)
++{
++#ifdef CONFIG_SYS_FSL_ERRATUM_A008850
++	/* part 1 of 2 */
++	struct ccsr_cci400 __iomem *cci = (void *)CONFIG_SYS_CCI400_ADDR;
++	struct ccsr_ddr __iomem *ddr = (void *)CONFIG_SYS_FSL_DDR_ADDR;
++
++	/* disables propagation of barrier transactions to DDRC from CCI400 */
++	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_TERM_BARRIER);
++
++	/* disable the re-ordering in DDRC */
++	ddr_out32(&ddr->eor, DDR_EOR_RD_REOD_DIS | DDR_EOR_WD_REOD_DIS);
++#endif
++}
++
++void erratum_a008850_post(void)
++{
++#ifdef CONFIG_SYS_FSL_ERRATUM_A008850
++	/* part 2 of 2 */
++	struct ccsr_cci400 __iomem *cci = (void *)CONFIG_SYS_CCI400_ADDR;
++	struct ccsr_ddr __iomem *ddr = (void *)CONFIG_SYS_FSL_DDR_ADDR;
++	u32 tmp;
++
++	/* enable propagation of barrier transactions to DDRC from CCI400 */
++	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
++
++	/* enable the re-ordering in DDRC */
++	tmp = ddr_in32(&ddr->eor);
++	tmp &= ~(DDR_EOR_RD_REOD_DIS | DDR_EOR_WD_REOD_DIS);
++	ddr_out32(&ddr->eor, tmp);
++#endif
++}
++
+ void fsl_lsch2_early_init_f(void)
+ {
+ 	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
+@@ -379,6 +414,7 @@ void fsl_lsch2_early_init_f(void)
+ 		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
+ 
+ 	/* Erratum */
++	erratum_a008850_early(); /* part 1 of 2 */
+ 	erratum_a009929();
+ 	erratum_a009660();
+ 	erratum_a009008();
+diff --git a/arch/arm/include/asm/arch-fsl-layerscape/config.h b/arch/arm/include/asm/arch-fsl-layerscape/config.h
+index d3a85c7..19a2ee4 100644
+--- a/arch/arm/include/asm/arch-fsl-layerscape/config.h
++++ b/arch/arm/include/asm/arch-fsl-layerscape/config.h
+@@ -193,6 +193,8 @@
+ /* Generic Interrupt Controller Definitions */
+ #define GICD_BASE		0x01401000
+ #define GICC_BASE		0x01402000
++
++#define CONFIG_SYS_FSL_ERRATUM_A008850
+ #define CONFIG_SYS_FSL_ERRATUM_A009663
+ #define CONFIG_SYS_FSL_ERRATUM_A009942
+ #define CONFIG_SYS_FSL_ERRATUM_A009929
+diff --git a/board/freescale/ls1043aqds/ddr.c b/board/freescale/ls1043aqds/ddr.c
+index 3d3c533..0fd835d 100644
+--- a/board/freescale/ls1043aqds/ddr.c
++++ b/board/freescale/ls1043aqds/ddr.c
+@@ -116,6 +116,7 @@ phys_size_t initdram(int board_type)
+ 
+ 	dram_size = fsl_ddr_sdram();
+ #endif
++	erratum_a008850_post();
+ 
+ #ifdef CONFIG_FSL_DEEP_SLEEP
+ 	fsl_dp_ddr_restore();
+diff --git a/board/freescale/ls1043aqds/ddr.h b/board/freescale/ls1043aqds/ddr.h
+index 8adb660..d3f4082 100644
+--- a/board/freescale/ls1043aqds/ddr.h
++++ b/board/freescale/ls1043aqds/ddr.h
+@@ -7,6 +7,8 @@
+ #ifndef __DDR_H__
+ #define __DDR_H__
+ 
++extern void erratum_a008850_post(void);
++
+ struct board_specific_parameters {
+ 	u32 n_ranks;
+ 	u32 datarate_mhz_high;
+diff --git a/board/freescale/ls1043aqds/ls1043aqds.c b/board/freescale/ls1043aqds/ls1043aqds.c
+index c418b6e..9157284 100644
+--- a/board/freescale/ls1043aqds/ls1043aqds.c
++++ b/board/freescale/ls1043aqds/ls1043aqds.c
+@@ -307,14 +307,6 @@ int misc_init_r(void)
+ 
+ int board_init(void)
+ {
+-	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)
+-				   CONFIG_SYS_CCI400_ADDR;
+-
+-	/* Set CCI-400 control override register to enable barrier
+-	 * transaction */
+-	out_le32(&cci->ctrl_ord,
+-		 CCI400_CTRLORD_EN_BARRIER);
+-
+ 	select_i2c_ch_pca9547(I2C_MUX_CH_DEFAULT);
+ 	board_retimer_init();
+ 
+diff --git a/board/freescale/ls1043ardb/ddr.c b/board/freescale/ls1043ardb/ddr.c
+index 11bc0f2..1e2fd2e 100644
+--- a/board/freescale/ls1043ardb/ddr.c
++++ b/board/freescale/ls1043ardb/ddr.c
+@@ -177,6 +177,8 @@ phys_size_t initdram(int board_type)
+ #else
+ 	dram_size =  fsl_ddr_sdram_size();
+ #endif
++	erratum_a008850_post();
++
+ #ifdef CONFIG_FSL_DEEP_SLEEP
+ 	fsl_dp_ddr_restore();
+ #endif
+diff --git a/board/freescale/ls1043ardb/ddr.h b/board/freescale/ls1043ardb/ddr.h
+index b17eb80..8ca166b 100644
+--- a/board/freescale/ls1043ardb/ddr.h
++++ b/board/freescale/ls1043ardb/ddr.h
+@@ -6,6 +6,9 @@
+ 
+ #ifndef __DDR_H__
+ #define __DDR_H__
++
++extern void erratum_a008850_post(void);
++
+ struct board_specific_parameters {
+ 	u32 n_ranks;
+ 	u32 datarate_mhz_high;
+diff --git a/board/freescale/ls1043ardb/ls1043ardb.c b/board/freescale/ls1043ardb/ls1043ardb.c
+index 26c3ac0..5d86457 100644
+--- a/board/freescale/ls1043ardb/ls1043ardb.c
++++ b/board/freescale/ls1043ardb/ls1043ardb.c
+@@ -83,17 +83,10 @@ int board_early_init_f(void)
+ 
+ int board_init(void)
+ {
+-	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
+ #ifdef CONFIG_FSL_LS_PPA
+ 	u64 ppa_entry;
+ #endif
+ 
+-	/*
+-	 * Set CCI-400 control override register to enable barrier
+-	 * transaction
+-	 */
+-	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
+-
+ #ifdef CONFIG_FSL_IFC
+ 	init_final_memctl_regs();
+ #endif
+diff --git a/include/fsl_ddr_sdram.h b/include/fsl_ddr_sdram.h
+index ae303ba..4e46d98 100644
+--- a/include/fsl_ddr_sdram.h
++++ b/include/fsl_ddr_sdram.h
+@@ -148,6 +148,10 @@ typedef struct ddr4_spd_eeprom_s generic_spd_eeprom_t;
+ #define WR_DATA_DELAY_SHIFT	10
+ #endif
+ 
++/* DDR_EOR register */
++#define DDR_EOR_RD_REOD_DIS	0x07000000
++#define DDR_EOR_WD_REOD_DIS	0x00100000
++
+ /* DDR_MD_CNTL */
+ #define MD_CNTL_MD_EN		0x80000000
+ #define MD_CNTL_CS_SEL_CS0	0x00000000
+-- 
+2.1.0.27.g96db324
+

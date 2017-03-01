@@ -1,0 +1,26 @@
+From 7a9b740f181313a3a1542c6f45cd22a4abcb03bd Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Fri, 8 Apr 2016 20:23:31 +0800
+Subject: [PATCH 10014/10030] ls1046ardb: enable 64M QSPI flash support
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ include/configs/ls1046ardb.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/ls1046ardb.h b/include/configs/ls1046ardb.h
+index 176f833..72a3ffb 100644
+--- a/include/configs/ls1046ardb.h
++++ b/include/configs/ls1046ardb.h
+@@ -211,6 +211,7 @@
+ #define CONFIG_SPI_FLASH_SPANSION
+ #define FSL_QSPI_FLASH_SIZE		(1 << 26)
+ #define FSL_QSPI_FLASH_NUM		2
++#define CONFIG_SPI_FLASH_BAR
+ #endif
+ 
+ /* USB */
+-- 
+2.1.0.27.g96db324
+

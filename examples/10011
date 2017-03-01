@@ -1,0 +1,29 @@
+From 3a4d11eaae6077adadaa4701ff30ffc3f54d088d Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Thu, 7 Apr 2016 17:51:00 +0800
+Subject: [PATCH 10011/10030] ls1046ardb: add DTSEC9 support
+
+MDIO could be tested.
+ping could not be tested because the Lane0 is routed to XFI.
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ board/freescale/ls1046ardb/eth.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/board/freescale/ls1046ardb/eth.c b/board/freescale/ls1046ardb/eth.c
+index 1cde137..1b3b7e5 100644
+--- a/board/freescale/ls1046ardb/eth.c
++++ b/board/freescale/ls1046ardb/eth.c
+@@ -56,6 +56,7 @@ int board_eth_init(bd_t *bis)
+ 		 * LS1046A uses MAC5/6, the PHY addr is 3/4.
+ 		 */
+ 		fm_info_set_phy_address(FM1_DTSEC2, SGMII_PHY1_ADDR);
++		fm_info_set_phy_address(FM1_DTSEC9, SGMII_PHY2_ADDR);
+ 		break;
+ 	default:
+ 		printf("Invalid SerDes protocol 0x%x for LS1046ARDB\n",
+-- 
+2.1.0.27.g96db324
+

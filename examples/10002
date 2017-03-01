@@ -1,0 +1,2378 @@
+From a4990cbae5ffd1a7efc426051f4eae6adb6943f2 Mon Sep 17 00:00:00 2001
+From: Shaohui Xie <Shaohui.Xie@nxp.com>
+Date: Fri, 1 Apr 2016 21:50:07 +0800
+Subject: [PATCH 10002/10030] armv8: ls1046aqds: Add LS1046AQDS board support
+
+LS1046AQDS Specification:
+-------------------------
+Memory subsystem:
+ * 8GByte DDR4 SDRAM (64bit bus)
+ * 128 Mbyte NOR flash single-chip memory
+ * 512 Mbyte NAND flash
+ * 64 Mbyte high-speed SPI flash
+ * SD connector to interface with the SD memory card
+
+Ethernet:
+ * Two XFI 10G ports
+ * Two SGMII ports
+ * Two RGMII ports
+
+PCIe: supports Gen 1 and Gen 2
+
+SATA 3.0: one SATA 3.0 port
+
+USB 3.0: two micro AB connector and one type A connector
+
+UART: supports two UARTs up to 115200 bps for console
+
+Signed-off-by: Shaohui Xie <Shaohui.Xie@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ arch/arm/Kconfig                                   |   9 +
+ arch/arm/dts/Makefile                              |   2 +
+ arch/arm/dts/fsl-ls1046a-qds-duart.dts             |  16 +
+ arch/arm/dts/fsl-ls1046a-qds-lpuart.dts            |  16 +
+ arch/arm/dts/fsl-ls1046a-qds.dtsi                  | 173 +++++++
+ board/freescale/ls1046aqds/Kconfig                 |  15 +
+ board/freescale/ls1046aqds/MAINTAINERS             |  10 +
+ board/freescale/ls1046aqds/Makefile                |   9 +
+ board/freescale/ls1046aqds/README                  |  97 ++++
+ board/freescale/ls1046aqds/ddr.c                   | 153 +++++++
+ board/freescale/ls1046aqds/ddr.h                   |  50 ++
+ board/freescale/ls1046aqds/eth.c                   | 492 ++++++++++++++++++++
+ board/freescale/ls1046aqds/ls1046aqds.c            | 385 ++++++++++++++++
+ board/freescale/ls1046aqds/ls1046aqds_pbi.cfg      |  14 +
+ board/freescale/ls1046aqds/ls1046aqds_qixis.h      |  39 ++
+ board/freescale/ls1046aqds/ls1046aqds_rcw_nand.cfg |   7 +
+ .../freescale/ls1046aqds/ls1046aqds_rcw_sd_ifc.cfg |   8 +
+ .../ls1046aqds/ls1046aqds_rcw_sd_qspi.cfg          |   8 +
+ configs/ls1046aqds_defconfig                       |   9 +
+ configs/ls1046aqds_lpuart_defconfig                |  10 +
+ configs/ls1046aqds_nand_defconfig                  |  10 +
+ configs/ls1046aqds_qspi_defconfig                  |   9 +
+ configs/ls1046aqds_sdcard_ifc_defconfig            |  10 +
+ configs/ls1046aqds_sdcard_qspi_defconfig           |  10 +
+ include/configs/ls1046a_common.h                   |  35 +-
+ include/configs/ls1046aqds.h                       | 507 +++++++++++++++++++++
+ 26 files changed, 2102 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm/dts/fsl-ls1046a-qds-duart.dts
+ create mode 100644 arch/arm/dts/fsl-ls1046a-qds-lpuart.dts
+ create mode 100644 arch/arm/dts/fsl-ls1046a-qds.dtsi
+ create mode 100644 board/freescale/ls1046aqds/Kconfig
+ create mode 100644 board/freescale/ls1046aqds/MAINTAINERS
+ create mode 100644 board/freescale/ls1046aqds/Makefile
+ create mode 100644 board/freescale/ls1046aqds/README
+ create mode 100644 board/freescale/ls1046aqds/ddr.c
+ create mode 100644 board/freescale/ls1046aqds/ddr.h
+ create mode 100644 board/freescale/ls1046aqds/eth.c
+ create mode 100644 board/freescale/ls1046aqds/ls1046aqds.c
+ create mode 100644 board/freescale/ls1046aqds/ls1046aqds_pbi.cfg
+ create mode 100644 board/freescale/ls1046aqds/ls1046aqds_qixis.h
+ create mode 100644 board/freescale/ls1046aqds/ls1046aqds_rcw_nand.cfg
+ create mode 100644 board/freescale/ls1046aqds/ls1046aqds_rcw_sd_ifc.cfg
+ create mode 100644 board/freescale/ls1046aqds/ls1046aqds_rcw_sd_qspi.cfg
+ create mode 100644 configs/ls1046aqds_defconfig
+ create mode 100644 configs/ls1046aqds_lpuart_defconfig
+ create mode 100644 configs/ls1046aqds_nand_defconfig
+ create mode 100644 configs/ls1046aqds_qspi_defconfig
+ create mode 100644 configs/ls1046aqds_sdcard_ifc_defconfig
+ create mode 100644 configs/ls1046aqds_sdcard_qspi_defconfig
+ create mode 100644 include/configs/ls1046aqds.h
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 072537e..118d5e4 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -672,6 +672,14 @@ config TARGET_LS1043ARDB
+ 	help
+ 	  Support for Freescale LS1043ARDB platform.
+ 
++config TARGET_LS1046AQDS
++	bool "Support ls1046aqds"
++	select ARM64
++	select ARMV8_MULTIENTRY
++	select SUPPORT_SPL
++	help
++	  Support for Freescale LS1046AQDS platform.
++
+ config TARGET_LS1046ARDB
+ 	bool "Support ls1046ardb"
+ 	select ARM64
+@@ -799,6 +807,7 @@ source "board/freescale/ls2080ardb/Kconfig"
+ source "board/freescale/ls1021aqds/Kconfig"
+ source "board/freescale/ls1043aqds/Kconfig"
+ source "board/freescale/ls1021atwr/Kconfig"
++source "board/freescale/ls1046aqds/Kconfig"
+ source "board/freescale/ls1043ardb/Kconfig"
+ source "board/freescale/ls1046ardb/Kconfig"
+ source "board/freescale/mx23evk/Kconfig"
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index c3a7db5..ed47185 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -95,6 +95,8 @@ dtb-$(CONFIG_FSL_LSCH3) += fsl-ls2080a-qds.dtb \
+ dtb-$(CONFIG_FSL_LSCH2) += fsl-ls1043a-qds-duart.dtb \
+ 	fsl-ls1043a-qds-lpuart.dtb \
+ 	fsl-ls1043a-rdb.dtb \
++	fsl-ls1046a-qds-duart.dtb \
++	fsl-ls1046a-qds-lpuart.dtb \
+ 	fsl-ls1046a-rdb.dtb
+ 
+ dtb-$(CONFIG_MACH_SUN4I) += \
+diff --git a/arch/arm/dts/fsl-ls1046a-qds-duart.dts b/arch/arm/dts/fsl-ls1046a-qds-duart.dts
+new file mode 100644
+index 0000000..10a95ea
+--- /dev/null
++++ b/arch/arm/dts/fsl-ls1046a-qds-duart.dts
+@@ -0,0 +1,16 @@
++/*
++ * Device Tree file for Freescale Layerscape-1046A family SoC.
++ *
++ * Copyright (C) 2016, Freescale Semiconductor
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++/dts-v1/;
++#include "fsl-ls1046a-qds.dtsi"
++
++/ {
++       chosen {
++               stdout-path = &duart0;
++       };
++};
+diff --git a/arch/arm/dts/fsl-ls1046a-qds-lpuart.dts b/arch/arm/dts/fsl-ls1046a-qds-lpuart.dts
+new file mode 100644
+index 0000000..21243d0
+--- /dev/null
++++ b/arch/arm/dts/fsl-ls1046a-qds-lpuart.dts
+@@ -0,0 +1,16 @@
++/*
++ * Device Tree file for Freescale Layerscape-1046A family SoC.
++ *
++ * Copyright (C) 2016, Freescale Semiconductor
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++/dts-v1/;
++#include "fsl-ls1046a-qds.dtsi"
++
++/ {
++       chosen {
++               stdout-path = &lpuart0;
++       };
++};
+diff --git a/arch/arm/dts/fsl-ls1046a-qds.dtsi b/arch/arm/dts/fsl-ls1046a-qds.dtsi
+new file mode 100644
+index 0000000..9b8f127
+--- /dev/null
++++ b/arch/arm/dts/fsl-ls1046a-qds.dtsi
+@@ -0,0 +1,173 @@
++/*
++ * Device Tree Include file for Freescale Layerscape-1046A family SoC.
++ *
++ * Copyright (C) 2016, Freescale Semiconductor
++ *
++ * Mingkai Hu <Mingkai.hu@nxp.com>
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ */
++
++/include/ "fsl-ls1046a.dtsi"
++
++/ {
++	model = "LS1046A QDS Board";
++	aliases {
++		spi0 = &qspi;
++		spi1 = &dspi0;
++	};
++};
++
++&dspi0 {
++	bus-num = <0>;
++	status = "okay";
++
++	dflash0: n25q128a {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "spi-flash";
++		spi-max-frequency = <1000000>; /* input clock */
++		spi-cpol;
++		spi-cpha;
++		reg = <0>;
++	};
++
++	dflash1: sst25wf040b {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "spi-flash";
++		spi-max-frequency = <3500000>;
++		spi-cpol;
++		spi-cpha;
++		reg = <1>;
++	};
++
++	dflash2: en25s64 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "spi-flash";
++		spi-max-frequency = <3500000>;
++		spi-cpol;
++		spi-cpha;
++		reg = <2>;
++	};
++};
++
++&qspi {
++	bus-num = <0>;
++	status = "okay";
++
++	qflash0: s25fl128s@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "spi-flash";
++		spi-max-frequency = <20000000>;
++		reg = <0>;
++	};
++};
++
++&i2c0 {
++	status = "okay";
++	pca9547@77 {
++		compatible = "philips,pca9547";
++		reg = <0x77>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x2>;
++
++			ina220@40 {
++				compatible = "ti,ina220";
++				reg = <0x40>;
++				shunt-resistor = <1000>;
++			};
++
++			ina220@41 {
++				compatible = "ti,ina220";
++				reg = <0x41>;
++				shunt-resistor = <1000>;
++			};
++		};
++
++		i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x3>;
++
++			rtc@51 {
++				compatible = "nxp,pcf2129";
++				reg = <0x51>;
++				/* IRQ10_B */
++				interrupts = <0 150 0x4>;
++			};
++
++			eeprom@56 {
++				compatible = "at24,24c512";
++				reg = <0x56>;
++			};
++
++			eeprom@57 {
++				compatible = "at24,24c512";
++				reg = <0x57>;
++			};
++
++			adt7461a@4c {
++				compatible = "adt7461a";
++				reg = <0x4c>;
++			};
++		};
++	};
++};
++
++&ifc {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	/* NOR, NAND Flashes and FPGA on board */
++	ranges = <0x0 0x0 0x0 0x60000000 0x08000000
++		  0x2 0x0 0x0 0x7e800000 0x00010000
++		  0x3 0x0 0x0 0x7fb00000 0x00000100>;
++	status = "okay";
++
++	nor@0,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "cfi-flash";
++		reg = <0x0 0x0 0x8000000>;
++		bank-width = <2>;
++		device-width = <1>;
++	};
++
++	nand@2,0 {
++		compatible = "fsl,ifc-nand";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0x1 0x0 0x10000>;
++	};
++
++	fpga: board-control@3,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		reg = <0x3 0x0 0x0000100>;
++		bank-width = <1>;
++		device-width = <1>;
++		ranges = <0 3 0 0x100>;
++	};
++};
++
++&duart0 {
++	status = "okay";
++};
++
++&duart1 {
++	status = "okay";
++};
++
++&lpuart0 {
++	status = "okay";
++};
+diff --git a/board/freescale/ls1046aqds/Kconfig b/board/freescale/ls1046aqds/Kconfig
+new file mode 100644
+index 0000000..723f4ba
+--- /dev/null
++++ b/board/freescale/ls1046aqds/Kconfig
+@@ -0,0 +1,15 @@
++if TARGET_LS1046AQDS
++
++config SYS_BOARD
++	default "ls1046aqds"
++
++config SYS_VENDOR
++	default "freescale"
++
++config SYS_SOC
++	default "fsl-layerscape"
++
++config SYS_CONFIG_NAME
++	default "ls1046aqds"
++
++endif
+diff --git a/board/freescale/ls1046aqds/MAINTAINERS b/board/freescale/ls1046aqds/MAINTAINERS
+new file mode 100644
+index 0000000..b4549ae
+--- /dev/null
++++ b/board/freescale/ls1046aqds/MAINTAINERS
+@@ -0,0 +1,10 @@
++LS1046AQDS BOARD
++M:	Mingkai Hu <Mingkai.Hu@nxp.com>
++S:	Maintained
++F:	board/freescale/ls1046aqds/
++F:	include/configs/ls1046aqds.h
++F:	configs/ls1046aqds_defconfig
++F:	configs/ls1046aqds_nand_defconfig
++F:	configs/ls1046aqds_sdcard_ifc_defconfig
++F:	configs/ls1046aqds_sdcard_qspi_defconfig
++F:	configs/ls1046aqds_qspi_defconfig
+diff --git a/board/freescale/ls1046aqds/Makefile b/board/freescale/ls1046aqds/Makefile
+new file mode 100644
+index 0000000..df6e546
+--- /dev/null
++++ b/board/freescale/ls1046aqds/Makefile
+@@ -0,0 +1,9 @@
++#
++# Copyright 2016 Freescale Semiconductor, Inc.
++#
++# SPDX-License-Identifier:      GPL-2.0+
++#
++
++obj-y += ddr.o
++obj-y += eth.o
++obj-y += ls1046aqds.o
+diff --git a/board/freescale/ls1046aqds/README b/board/freescale/ls1046aqds/README
+new file mode 100644
+index 0000000..c670db2
+--- /dev/null
++++ b/board/freescale/ls1046aqds/README
+@@ -0,0 +1,97 @@
++Overview
++--------
++The LS1046A Development System (QDS) is a high-performance computing,
++evaluation, and development platform that supports the QorIQ LS1046A
++LayerScape Architecture processor. The LS1046AQDS provides SW development
++platform for the Freescale LS1046A processor series, with a complete
++debugging environment.
++
++LS1046A SoC Overview
++--------------------
++The LS1046A integrated multicore processor combines four ARM Cortex-A72
++processor cores with datapath acceleration optimized for L2/3 packet
++processing, single pass security offload and robust traffic management
++and quality of service.
++
++The LS1046A SoC includes the following function and features:
++ - Four 64-bit ARM Cortex-A72 CPUs
++ - 2 MB unified L2 Cache
++ - One 32-bit DDR3L/DDR4 SDRAM memory controllers with ECC and interleaving
++   support
++ - Data Path Acceleration Architecture (DPAA) incorporating acceleration the
++   the following functions:
++   - Packet parsing, classification, and distribution (FMan)
++   - Queue management for scheduling, packet sequencing, and congestion
++     management (QMan)
++   - Hardware buffer management for buffer allocation and de-allocation (BMan)
++   - Cryptography acceleration (SEC)
++ - Ethernet interfaces by FMan
++   - Up to 2 x XFI supporting 10G interface (MAC 9, 10)
++   - Up to 1 x QSGMII (MAC 5, 6, 10, 1)
++   - Up to 4 x SGMII supporting 1000Mbps (MAC 5, 6, 9, 10)
++   - Up to 3 x SGMII supporting 2500Mbps (MAC 5, 9, 10)
++   - Up to 2 x RGMII supporting 1000Mbps (MAC 3, 4)
++ - High-speed peripheral interfaces
++   - Three PCIe 3.0 controllers, one supporting x4 operation
++   - One serial ATA (SATA 3.0) controllers
++ - Additional peripheral interfaces
++   - Three high-speed USB 3.0 controllers with integrated PHY
++   - Enhanced secure digital host controller (eSDXC/eMMC)
++   - Quad Serial Peripheral Interface (QSPI) Controller
++   - Serial peripheral interface (SPI) controller
++   - Four I2C controllers
++   - Two DUARTs
++   - Integrated flash controller supporting NAND and NOR flash
++ - QorIQ platform's trust architecture 2.1
++
++ LS1046AQDS board Overview
++ -----------------------
++ - SERDES Connections, 8 lanes supporting:
++      - PCI Express - 3.0
++      - SGMII, SGMII 2.5
++      - QSGMII
++      - SATA 3.0
++      - XFI
++ - DDR Controller
++     - 8GB 64bits DDR4 SDRAM. Support rates of up to 2133MT/s
++ -IFC/Local Bus
++    - One in-socket 128 MB NOR flash 16-bit data bus
++    - One 512 MB NAND flash with ECC support
++    - PromJet Port
++    - FPGA connection
++ - USB 3.0
++    - Three high speed USB 3.0 ports
++    - First USB 3.0 port configured as Host with Type-A connector
++    - The other two USB 3.0 ports configured as OTG with micro-AB connector
++ - SDHC port connects directly to an adapter card slot, featuring:
++    - Optional clock feedback paths, and optional high-speed voltage translation assistance
++    - SD slots for SD, SDHC (1x, 4x, 8x), and/or MMC
++    - eMMC memory devices
++ - DSPI: Onboard support for three SPI flash memory devices
++ - 4 I2C controllers
++ - One SATA onboard connectors
++ - UART
++   - Two 4-pin serial ports at up to 115.2 Kbit/s
++   - Two DB9 D-Type connectors supporting one Serial port each
++ - ARM JTAG support
++
++Memory map from core's view
++----------------------------
++Start Address	End Address	Description		Size
++0x00_0000_0000	0x00_000F_FFFF	Secure Boot ROM		1MB
++0x00_0100_0000	0x00_0FFF_FFFF	CCSRBAR			240MB
++0x00_1000_0000	0x00_1000_FFFF	OCRAM0			64KB
++0x00_1001_0000	0x00_1001_FFFF	OCRAM1			64KB
++0x00_2000_0000	0x00_20FF_FFFF	DCSR			16MB
++0x00_6000_0000	0x00_67FF_FFFF	IFC - NOR Flash		128MB
++0x00_7E80_0000	0x00_7E80_FFFF	IFC - NAND Flash	64KB
++0x00_7FB0_0000	0x00_7FB0_0FFF	IFC - FPGA		4KB
++0x00_8000_0000	0x00_FFFF_FFFF	DRAM1			2GB
++
++Booting Options
++---------------
++a) Promjet Boot
++b) NOR boot
++c) NAND boot
++d) SD boot
++e) QSPI boot
+diff --git a/board/freescale/ls1046aqds/ddr.c b/board/freescale/ls1046aqds/ddr.c
+new file mode 100644
+index 0000000..c2bbf1b
+--- /dev/null
++++ b/board/freescale/ls1046aqds/ddr.c
+@@ -0,0 +1,153 @@
++/*
++ * Copyright 2016 Freescale Semiconductor, Inc.
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <fsl_ddr_sdram.h>
++#include <fsl_ddr_dimm_params.h>
++#ifdef CONFIG_FSL_DEEP_SLEEP
++#include <fsl_sleep.h>
++#endif
++#include "ddr.h"
++
++DECLARE_GLOBAL_DATA_PTR;
++
++void fsl_ddr_board_options(memctl_options_t *popts,
++			   dimm_params_t *pdimm,
++			   unsigned int ctrl_num)
++{
++	const struct board_specific_parameters *pbsp, *pbsp_highest = NULL;
++	ulong ddr_freq;
++
++	if (ctrl_num > 3) {
++		printf("Not supported controller number %d\n", ctrl_num);
++		return;
++	}
++	if (!pdimm->n_ranks)
++		return;
++
++	pbsp = udimms[0];
++
++	/* Get clk_adjust, wrlvl_start, wrlvl_ctl, according to the board ddr
++	 * freqency and n_banks specified in board_specific_parameters table.
++	 */
++	ddr_freq = get_ddr_freq(0) / 1000000;
++	while (pbsp->datarate_mhz_high) {
++		if (pbsp->n_ranks == pdimm->n_ranks) {
++			if (ddr_freq <= pbsp->datarate_mhz_high) {
++				popts->clk_adjust = pbsp->clk_adjust;
++				popts->wrlvl_start = pbsp->wrlvl_start;
++				popts->wrlvl_ctl_2 = pbsp->wrlvl_ctl_2;
++				popts->wrlvl_ctl_3 = pbsp->wrlvl_ctl_3;
++				popts->cpo_override = pbsp->cpo_override;
++				popts->write_data_delay =
++					pbsp->write_data_delay;
++				goto found;
++			}
++			pbsp_highest = pbsp;
++		}
++		pbsp++;
++	}
++
++	if (pbsp_highest) {
++		printf("Error: board specific timing not found for %lu MT/s\n",
++		       ddr_freq);
++		printf("Trying to use the highest speed (%u) parameters\n",
++		       pbsp_highest->datarate_mhz_high);
++		popts->clk_adjust = pbsp_highest->clk_adjust;
++		popts->wrlvl_start = pbsp_highest->wrlvl_start;
++		popts->wrlvl_ctl_2 = pbsp->wrlvl_ctl_2;
++		popts->wrlvl_ctl_3 = pbsp->wrlvl_ctl_3;
++	} else {
++		panic("DIMM is not supported by this board");
++	}
++found:
++	debug("Found timing match: n_ranks %d, data rate %d, rank_gb %d\n",
++	      pbsp->n_ranks, pbsp->datarate_mhz_high, pbsp->rank_gb);
++
++	/* force DDR bus width to 32 bits */
++	popts->data_bus_width = 1;
++	popts->otf_burst_chop_en = 0;
++	popts->burst_length = DDR_BL8;
++	popts->bstopre = 0;		/* enable auto precharge */
++
++	/*
++	 * Factors to consider for half-strength driver enable:
++	 *	- number of DIMMs installed
++	 */
++	popts->half_strength_driver_enable = 1;
++	/*
++	 * Write leveling override
++	 */
++	popts->wrlvl_override = 1;
++	popts->wrlvl_sample = 0xf;
++
++	/*
++	 * Rtt and Rtt_WR override
++	 */
++	popts->rtt_override = 0;
++
++	/* Enable ZQ calibration */
++	popts->zq_en = 1;
++
++#ifdef CONFIG_SYS_FSL_DDR4
++	popts->ddr_cdr1 = DDR_CDR1_DHC_EN | DDR_CDR1_ODT(DDR_CDR_ODT_80ohm);
++	popts->ddr_cdr2 = DDR_CDR2_ODT(DDR_CDR_ODT_80ohm) |
++			  DDR_CDR2_VREF_OVRD(70);	/* Vref = 70% */
++#else
++	popts->cswl_override = DDR_CSWL_CS0;
++
++	/* DHC_EN =1, ODT = 75 Ohm */
++	popts->ddr_cdr1 = DDR_CDR1_DHC_EN | DDR_CDR1_ODT(DDR_CDR_ODT_75ohm);
++	popts->ddr_cdr2 = DDR_CDR2_ODT(DDR_CDR_ODT_75ohm);
++#endif
++}
++
++phys_size_t initdram(int board_type)
++{
++	phys_size_t dram_size;
++
++#if defined(CONFIG_SPL) && !defined(CONFIG_SPL_BUILD)
++	return fsl_ddr_sdram_size();
++#else
++	puts("Initializing DDR....using SPD\n");
++
++	dram_size = fsl_ddr_sdram();
++#endif
++
++#ifdef CONFIG_FSL_DEEP_SLEEP
++	fsl_dp_ddr_restore();
++#endif
++
++	return dram_size;
++}
++
++void dram_init_banksize(void)
++{
++	/*
++	 * gd->secure_ram tracks the location of secure memory.
++	 * It was set as if the memory starts from 0.
++	 * The address needs to add the offset of its bank.
++	 */
++	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
++	if (gd->ram_size > CONFIG_SYS_DDR_BLOCK1_SIZE) {
++		gd->bd->bi_dram[0].size = CONFIG_SYS_DDR_BLOCK1_SIZE;
++		gd->bd->bi_dram[1].start = CONFIG_SYS_DDR_BLOCK2_BASE;
++		gd->bd->bi_dram[1].size = gd->ram_size -
++					  CONFIG_SYS_DDR_BLOCK1_SIZE;
++#ifdef CONFIG_SYS_MEM_RESERVE_SECURE
++		gd->secure_ram = gd->bd->bi_dram[1].start +
++				 gd->secure_ram -
++				 CONFIG_SYS_DDR_BLOCK1_SIZE;
++		gd->secure_ram |= MEM_RESERVE_SECURE_MAINTAINED;
++#endif
++	} else {
++		gd->bd->bi_dram[0].size = gd->ram_size;
++#ifdef CONFIG_SYS_MEM_RESERVE_SECURE
++		gd->secure_ram = gd->bd->bi_dram[0].start + gd->secure_ram;
++		gd->secure_ram |= MEM_RESERVE_SECURE_MAINTAINED;
++#endif
++	}
++}
+diff --git a/board/freescale/ls1046aqds/ddr.h b/board/freescale/ls1046aqds/ddr.h
+new file mode 100644
+index 0000000..d0b4a93
+--- /dev/null
++++ b/board/freescale/ls1046aqds/ddr.h
+@@ -0,0 +1,50 @@
++/*
++ * Copyright 2016 Freescale Semiconductor, Inc.
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef __DDR_H__
++#define __DDR_H__
++
++struct board_specific_parameters {
++	u32 n_ranks;
++	u32 datarate_mhz_high;
++	u32 rank_gb;
++	u32 clk_adjust;
++	u32 wrlvl_start;
++	u32 wrlvl_ctl_2;
++	u32 wrlvl_ctl_3;
++	u32 cpo_override;
++	u32 write_data_delay;
++	u32 force_2t;
++};
++
++/*
++ * These tables contain all valid speeds we want to override with board
++ * specific parameters. datarate_mhz_high values need to be in ascending order
++ * for each n_ranks group.
++ */
++static const struct board_specific_parameters udimm0[] = {
++	/*
++	 * memory controller 0
++	 *   num|  hi| rank|  clk| wrlvl |   wrlvl   |  wrlvl | cpo  |wrdata|2T
++	 * ranks| mhz| GB  |adjst| start |   ctl2    |  ctl3  |      |delay |
++	 */
++#ifdef CONFIG_SYS_FSL_DDR4
++	{2,  1666, 0, 4,     7, 0x0808090B, 0x0C0D0E0A,},
++	{2,  1900, 0, 4,     6, 0x08080A0C, 0x0D0E0F0A,},
++	{1,  1666, 0, 4,     6, 0x0708090B, 0x0C0D0E0A,},
++	{1,  1900, 0, 4,     9, 0x0A0B0C0B, 0x0D0E0F0D,},
++	{1,  2200, 0, 4,    10, 0x0B0C0D0C, 0x0E0F110E,},
++#else
++#error DDR type not defined
++#endif
++	{}
++};
++
++static const struct board_specific_parameters *udimms[] = {
++	udimm0,
++};
++
++#endif
+diff --git a/board/freescale/ls1046aqds/eth.c b/board/freescale/ls1046aqds/eth.c
+new file mode 100644
+index 0000000..753d9f2
+--- /dev/null
++++ b/board/freescale/ls1046aqds/eth.c
+@@ -0,0 +1,492 @@
++/*
++ * Copyright 2016 Freescale Semiconductor, Inc.
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <asm/io.h>
++#include <netdev.h>
++#include <fm_eth.h>
++#include <fsl_mdio.h>
++#include <fsl_dtsec.h>
++#include <malloc.h>
++#include <asm/arch/fsl_serdes.h>
++
++#include "../common/qixis.h"
++#include "../common/fman.h"
++#include "ls1046aqds_qixis.h"
++
++#define EMI_NONE	0xFF
++#define EMI1_RGMII1	0
++#define EMI1_RGMII2	1
++#define EMI1_SLOT1	2
++#define EMI1_SLOT2	3
++#define EMI1_SLOT3	4
++#define EMI1_SLOT4	5
++#define EMI2		6
++
++static int mdio_mux[NUM_FM_PORTS];
++
++static const char * const mdio_names[] = {
++	"LS1046AQDS_MDIO_RGMII1",
++	"LS1046AQDS_MDIO_RGMII2",
++	"LS1046AQDS_MDIO_SLOT1",
++	"LS1046AQDS_MDIO_SLOT2",
++	"LS1046AQDS_MDIO_SLOT3",
++	"LS1046AQDS_MDIO_SLOT4",
++	"NULL",
++};
++
++/* Map SerDes1 4 lanes to default slot, will be initialized dynamically */
++static u8 lane_to_slot[] = {1, 2, 3, 4};
++
++static const char *ls1046aqds_mdio_name_for_muxval(u8 muxval)
++{
++	return mdio_names[muxval];
++}
++
++struct mii_dev *mii_dev_for_muxval(u8 muxval)
++{
++	struct mii_dev *bus;
++	const char *name;
++
++	if (muxval > EMI2)
++		return NULL;
++
++	name = ls1046aqds_mdio_name_for_muxval(muxval);
++
++	if (!name) {
++		printf("No bus for muxval %x\n", muxval);
++		return NULL;
++	}
++
++	bus = miiphy_get_dev_by_name(name);
++
++	if (!bus) {
++		printf("No bus by name %s\n", name);
++		return NULL;
++	}
++
++	return bus;
++}
++
++struct ls1046aqds_mdio {
++	u8 muxval;
++	struct mii_dev *realbus;
++};
++
++static void ls1046aqds_mux_mdio(u8 muxval)
++{
++	u8 brdcfg4;
++
++	if (muxval < 7) {
++		brdcfg4 = QIXIS_READ(brdcfg[4]);
++		brdcfg4 &= ~BRDCFG4_EMISEL_MASK;
++		brdcfg4 |= (muxval << BRDCFG4_EMISEL_SHIFT);
++		QIXIS_WRITE(brdcfg[4], brdcfg4);
++	}
++}
++
++static int ls1046aqds_mdio_read(struct mii_dev *bus, int addr, int devad,
++			      int regnum)
++{
++	struct ls1046aqds_mdio *priv = bus->priv;
++
++	ls1046aqds_mux_mdio(priv->muxval);
++
++	return priv->realbus->read(priv->realbus, addr, devad, regnum);
++}
++
++static int ls1046aqds_mdio_write(struct mii_dev *bus, int addr, int devad,
++			       int regnum, u16 value)
++{
++	struct ls1046aqds_mdio *priv = bus->priv;
++
++	ls1046aqds_mux_mdio(priv->muxval);
++
++	return priv->realbus->write(priv->realbus, addr, devad,
++				    regnum, value);
++}
++
++static int ls1046aqds_mdio_reset(struct mii_dev *bus)
++{
++	struct ls1046aqds_mdio *priv = bus->priv;
++
++	return priv->realbus->reset(priv->realbus);
++}
++
++static int ls1046aqds_mdio_init(char *realbusname, u8 muxval)
++{
++	struct ls1046aqds_mdio *pmdio;
++	struct mii_dev *bus = mdio_alloc();
++
++	if (!bus) {
++		printf("Failed to allocate ls1046aqds MDIO bus\n");
++		return -1;
++	}
++
++	pmdio = malloc(sizeof(*pmdio));
++	if (!pmdio) {
++		printf("Failed to allocate ls1046aqds private data\n");
++		free(bus);
++		return -1;
++	}
++
++	bus->read = ls1046aqds_mdio_read;
++	bus->write = ls1046aqds_mdio_write;
++	bus->reset = ls1046aqds_mdio_reset;
++	sprintf(bus->name, ls1046aqds_mdio_name_for_muxval(muxval));
++
++	pmdio->realbus = miiphy_get_dev_by_name(realbusname);
++
++	if (!pmdio->realbus) {
++		printf("No bus with name %s\n", realbusname);
++		free(bus);
++		free(pmdio);
++		return -1;
++	}
++
++	pmdio->muxval = muxval;
++	bus->priv = pmdio;
++	return mdio_register(bus);
++}
++
++void board_ft_fman_fixup_port(void *fdt, char *compat, phys_addr_t addr,
++			      enum fm_port port, int offset)
++{
++	struct fixed_link f_link;
++
++	if (fm_info_get_enet_if(port) == PHY_INTERFACE_MODE_SGMII) {
++		if (port == FM1_DTSEC9) {
++			fdt_set_phy_handle(fdt, compat, addr,
++					   "sgmii_riser_s1_p1");
++		} else if (port == FM1_DTSEC2) {
++			fdt_set_phy_handle(fdt, compat, addr,
++					   "sgmii_riser_s2_p1");
++		} else if (port == FM1_DTSEC5) {
++			fdt_set_phy_handle(fdt, compat, addr,
++					   "sgmii_riser_s3_p1");
++		} else if (port == FM1_DTSEC6) {
++			fdt_set_phy_handle(fdt, compat, addr,
++					   "sgmii_riser_s4_p1");
++		}
++	} else if (fm_info_get_enet_if(port) ==
++		   PHY_INTERFACE_MODE_SGMII_2500) {
++		/* 2.5G SGMII interface */
++		f_link.phy_id = cpu_to_fdt32(port);
++		f_link.duplex = cpu_to_fdt32(1);
++		f_link.link_speed = cpu_to_fdt32(1000);
++		f_link.pause = 0;
++		f_link.asym_pause = 0;
++		/* no PHY for 2.5G SGMII */
++		fdt_delprop(fdt, offset, "phy-handle");
++		fdt_setprop(fdt, offset, "fixed-link", &f_link, sizeof(f_link));
++		fdt_setprop_string(fdt, offset, "phy-connection-type",
++				   "sgmii-2500");
++	} else if (fm_info_get_enet_if(port) == PHY_INTERFACE_MODE_QSGMII) {
++		switch (mdio_mux[port]) {
++		case EMI1_SLOT1:
++			switch (port) {
++			case FM1_DTSEC1:
++				fdt_set_phy_handle(fdt, compat, addr,
++						   "qsgmii_s1_p1");
++				break;
++			case FM1_DTSEC2:
++				fdt_set_phy_handle(fdt, compat, addr,
++						   "qsgmii_s1_p2");
++				break;
++			case FM1_DTSEC5:
++				fdt_set_phy_handle(fdt, compat, addr,
++						   "qsgmii_s1_p3");
++				break;
++			case FM1_DTSEC6:
++				fdt_set_phy_handle(fdt, compat, addr,
++						   "qsgmii_s1_p4");
++				break;
++			default:
++				break;
++			}
++			break;
++		case EMI1_SLOT2:
++			switch (port) {
++			case FM1_DTSEC1:
++				fdt_set_phy_handle(fdt, compat, addr,
++						   "qsgmii_s2_p1");
++				break;
++			case FM1_DTSEC2:
++				fdt_set_phy_handle(fdt, compat, addr,
++						   "qsgmii_s2_p2");
++				break;
++			case FM1_DTSEC5:
++				fdt_set_phy_handle(fdt, compat, addr,
++						   "qsgmii_s2_p3");
++				break;
++			case FM1_DTSEC6:
++				fdt_set_phy_handle(fdt, compat, addr,
++						   "qsgmii_s2_p4");
++				break;
++			default:
++				break;
++			}
++			break;
++		default:
++			break;
++		}
++		fdt_delprop(fdt, offset, "phy-connection-type");
++		fdt_setprop_string(fdt, offset, "phy-connection-type",
++				   "qsgmii");
++	} else if (fm_info_get_enet_if(port) == PHY_INTERFACE_MODE_XGMII &&
++		   port == FM1_10GEC1) {
++		/* XFI interface */
++		f_link.phy_id = cpu_to_fdt32(port);
++		f_link.duplex = cpu_to_fdt32(1);
++		f_link.link_speed = cpu_to_fdt32(10000);
++		f_link.pause = 0;
++		f_link.asym_pause = 0;
++		/* no PHY for XFI */
++		fdt_delprop(fdt, offset, "phy-handle");
++		fdt_setprop(fdt, offset, "fixed-link", &f_link, sizeof(f_link));
++		fdt_setprop_string(fdt, offset, "phy-connection-type", "xgmii");
++	}
++}
++
++void fdt_fixup_board_enet(void *fdt)
++{
++	int i;
++	struct ccsr_gur *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
++	u32 srds_s1;
++
++	srds_s1 = in_be32(&gur->rcwsr[4]) &
++			FSL_CHASSIS2_RCWSR4_SRDS1_PRTCL_MASK;
++	srds_s1 >>= FSL_CHASSIS2_RCWSR4_SRDS1_PRTCL_SHIFT;
++
++	for (i = FM1_DTSEC1; i < NUM_FM_PORTS; i++) {
++		switch (fm_info_get_enet_if(i)) {
++		case PHY_INTERFACE_MODE_SGMII:
++		case PHY_INTERFACE_MODE_QSGMII:
++			switch (mdio_mux[i]) {
++			case EMI1_SLOT1:
++				fdt_status_okay_by_alias(fdt, "emi1_slot1");
++				break;
++			case EMI1_SLOT2:
++				fdt_status_okay_by_alias(fdt, "emi1_slot2");
++				break;
++			case EMI1_SLOT3:
++				fdt_status_okay_by_alias(fdt, "emi1_slot3");
++				break;
++			case EMI1_SLOT4:
++				fdt_status_okay_by_alias(fdt, "emi1_slot4");
++				break;
++			default:
++				break;
++			}
++			break;
++		case PHY_INTERFACE_MODE_XGMII:
++			break;
++		default:
++			break;
++		}
++	}
++}
++
++int board_eth_init(bd_t *bis)
++{
++#ifdef CONFIG_FMAN_ENET
++	int i, idx, lane, slot, interface;
++	struct memac_mdio_info dtsec_mdio_info;
++	struct memac_mdio_info tgec_mdio_info;
++	struct ccsr_gur *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
++	u32 srds_s1;
++
++	srds_s1 = in_be32(&gur->rcwsr[4]) &
++			FSL_CHASSIS2_RCWSR4_SRDS1_PRTCL_MASK;
++	srds_s1 >>= FSL_CHASSIS2_RCWSR4_SRDS1_PRTCL_SHIFT;
++
++	/* Initialize the mdio_mux array so we can recognize empty elements */
++	for (i = 0; i < NUM_FM_PORTS; i++)
++		mdio_mux[i] = EMI_NONE;
++
++	dtsec_mdio_info.regs =
++		(struct memac_mdio_controller *)CONFIG_SYS_FM1_DTSEC_MDIO_ADDR;
++
++	dtsec_mdio_info.name = DEFAULT_FM_MDIO_NAME;
++
++	/* Register the 1G MDIO bus */
++	fm_memac_mdio_init(bis, &dtsec_mdio_info);
++
++	tgec_mdio_info.regs =
++		(struct memac_mdio_controller *)CONFIG_SYS_FM1_TGEC_MDIO_ADDR;
++	tgec_mdio_info.name = DEFAULT_FM_TGEC_MDIO_NAME;
++
++	/* Register the 10G MDIO bus */
++	fm_memac_mdio_init(bis, &tgec_mdio_info);
++
++	/* Register the muxing front-ends to the MDIO buses */
++	ls1046aqds_mdio_init(DEFAULT_FM_MDIO_NAME, EMI1_RGMII1);
++	ls1046aqds_mdio_init(DEFAULT_FM_MDIO_NAME, EMI1_RGMII2);
++	ls1046aqds_mdio_init(DEFAULT_FM_MDIO_NAME, EMI1_SLOT1);
++	ls1046aqds_mdio_init(DEFAULT_FM_MDIO_NAME, EMI1_SLOT2);
++	ls1046aqds_mdio_init(DEFAULT_FM_MDIO_NAME, EMI1_SLOT3);
++	ls1046aqds_mdio_init(DEFAULT_FM_MDIO_NAME, EMI1_SLOT4);
++	ls1046aqds_mdio_init(DEFAULT_FM_TGEC_MDIO_NAME, EMI2);
++
++	/* Set the two on-board RGMII PHY address */
++	fm_info_set_phy_address(FM1_DTSEC3, RGMII_PHY1_ADDR);
++	fm_info_set_phy_address(FM1_DTSEC4, RGMII_PHY2_ADDR);
++
++	switch (srds_s1) {
++	case 0x2555:
++		/* 2.5G SGMII on lane A, MAC 9 */
++		fm_info_set_phy_address(FM1_DTSEC9, 9);
++		break;
++	case 0x4555:
++	case 0x4558:
++		/* QSGMII on lane A, MAC 1/2/5/6 */
++		fm_info_set_phy_address(FM1_DTSEC1,
++					QSGMII_CARD_PORT1_PHY_ADDR_S1);
++		fm_info_set_phy_address(FM1_DTSEC2,
++					QSGMII_CARD_PORT2_PHY_ADDR_S1);
++		fm_info_set_phy_address(FM1_DTSEC5,
++					QSGMII_CARD_PORT3_PHY_ADDR_S1);
++		fm_info_set_phy_address(FM1_DTSEC6,
++					QSGMII_CARD_PORT4_PHY_ADDR_S1);
++		break;
++	case 0x1355:
++		/* SGMII on lane B, MAC 2*/
++		fm_info_set_phy_address(FM1_DTSEC2, SGMII_CARD_PORT1_PHY_ADDR);
++		break;
++	case 0x2355:
++		/* 2.5G SGMII on lane A, MAC 9 */
++		fm_info_set_phy_address(FM1_DTSEC9, 9);
++		/* SGMII on lane B, MAC 2*/
++		fm_info_set_phy_address(FM1_DTSEC2, SGMII_CARD_PORT1_PHY_ADDR);
++		break;
++	case 0x3335:
++		/* SGMII on lane C, MAC 5 */
++		fm_info_set_phy_address(FM1_DTSEC5, SGMII_CARD_PORT1_PHY_ADDR);
++	case 0x3355:
++	case 0x3358:
++		/* SGMII on lane B, MAC 2 */
++		fm_info_set_phy_address(FM1_DTSEC2, SGMII_CARD_PORT1_PHY_ADDR);
++	case 0x3555:
++	case 0x3558:
++		/* SGMII on lane A, MAC 9 */
++		fm_info_set_phy_address(FM1_DTSEC9, SGMII_CARD_PORT1_PHY_ADDR);
++		break;
++	case 0x1455:
++		/* QSGMII on lane B, MAC 1/2/5/6 */
++		fm_info_set_phy_address(FM1_DTSEC1,
++					QSGMII_CARD_PORT1_PHY_ADDR_S2);
++		fm_info_set_phy_address(FM1_DTSEC2,
++					QSGMII_CARD_PORT2_PHY_ADDR_S2);
++		fm_info_set_phy_address(FM1_DTSEC5,
++					QSGMII_CARD_PORT3_PHY_ADDR_S2);
++		fm_info_set_phy_address(FM1_DTSEC6,
++					QSGMII_CARD_PORT4_PHY_ADDR_S2);
++		break;
++	case 0x2455:
++		/* 2.5G SGMII on lane A, MAC 9 */
++		fm_info_set_phy_address(FM1_DTSEC9, 9);
++		/* QSGMII on lane B, MAC 1/2/5/6 */
++		fm_info_set_phy_address(FM1_DTSEC1,
++					QSGMII_CARD_PORT1_PHY_ADDR_S2);
++		fm_info_set_phy_address(FM1_DTSEC2,
++					QSGMII_CARD_PORT2_PHY_ADDR_S2);
++		fm_info_set_phy_address(FM1_DTSEC5,
++					QSGMII_CARD_PORT3_PHY_ADDR_S2);
++		fm_info_set_phy_address(FM1_DTSEC6,
++					QSGMII_CARD_PORT4_PHY_ADDR_S2);
++		break;
++	case 0x2255:
++		/* 2.5G SGMII on lane A, MAC 9 */
++		fm_info_set_phy_address(FM1_DTSEC9, 9);
++		/* 2.5G SGMII on lane B, MAC 2 */
++		fm_info_set_phy_address(FM1_DTSEC2, 2);
++		break;
++	case 0x3333:
++		/* SGMII on lane A/B/C/D, MAC 9/2/5/6 */
++		fm_info_set_phy_address(FM1_DTSEC9,
++					SGMII_CARD_PORT1_PHY_ADDR);
++		fm_info_set_phy_address(FM1_DTSEC2,
++					SGMII_CARD_PORT1_PHY_ADDR);
++		fm_info_set_phy_address(FM1_DTSEC5,
++					SGMII_CARD_PORT1_PHY_ADDR);
++		fm_info_set_phy_address(FM1_DTSEC6,
++					SGMII_CARD_PORT1_PHY_ADDR);
++		break;
++	default:
++		printf("Invalid SerDes protocol 0x%x for LS1046AQDS\n",
++		       srds_s1);
++		break;
++	}
++
++	for (i = FM1_DTSEC1; i < FM1_DTSEC1 + CONFIG_SYS_NUM_FM1_DTSEC; i++) {
++		idx = i - FM1_DTSEC1;
++		interface = fm_info_get_enet_if(i);
++		switch (interface) {
++		case PHY_INTERFACE_MODE_SGMII:
++		case PHY_INTERFACE_MODE_SGMII_2500:
++		case PHY_INTERFACE_MODE_QSGMII:
++			if (interface == PHY_INTERFACE_MODE_SGMII) {
++				lane = serdes_get_first_lane(FSL_SRDS_1,
++						SGMII_FM1_DTSEC1 + idx);
++			} else if (interface == PHY_INTERFACE_MODE_SGMII_2500) {
++				lane = serdes_get_first_lane(FSL_SRDS_1,
++						SGMII_2500_FM1_DTSEC1 + idx);
++			} else {
++				lane = serdes_get_first_lane(FSL_SRDS_1,
++						QSGMII_FM1_A);
++			}
++
++			if (lane < 0)
++				break;
++
++			slot = lane_to_slot[lane];
++			debug("FM1@DTSEC%u expects SGMII in slot %u\n",
++			      idx + 1, slot);
++			if (QIXIS_READ(present2) & (1 << (slot - 1)))
++				fm_disable_port(i);
++
++			switch (slot) {
++			case 1:
++				mdio_mux[i] = EMI1_SLOT1;
++				fm_info_set_mdio(i, mii_dev_for_muxval(
++						 mdio_mux[i]));
++				break;
++			case 2:
++				mdio_mux[i] = EMI1_SLOT2;
++				fm_info_set_mdio(i, mii_dev_for_muxval(
++						 mdio_mux[i]));
++				break;
++			case 3:
++				mdio_mux[i] = EMI1_SLOT3;
++				fm_info_set_mdio(i, mii_dev_for_muxval(
++						 mdio_mux[i]));
++				break;
++			case 4:
++				mdio_mux[i] = EMI1_SLOT4;
++				fm_info_set_mdio(i, mii_dev_for_muxval(
++						 mdio_mux[i]));
++				break;
++			default:
++				break;
++			}
++			break;
++		case PHY_INTERFACE_MODE_RGMII:
++			if (i == FM1_DTSEC3)
++				mdio_mux[i] = EMI1_RGMII1;
++			else if (i == FM1_DTSEC4)
++				mdio_mux[i] = EMI1_RGMII2;
++			fm_info_set_mdio(i, mii_dev_for_muxval(mdio_mux[i]));
++			break;
++		default:
++			break;
++		}
++	}
++
++	cpu_eth_init(bis);
++#endif /* CONFIG_FMAN_ENET */
++
++	return pci_eth_init(bis);
++}
+diff --git a/board/freescale/ls1046aqds/ls1046aqds.c b/board/freescale/ls1046aqds/ls1046aqds.c
+new file mode 100644
+index 0000000..8c5b207
+--- /dev/null
++++ b/board/freescale/ls1046aqds/ls1046aqds.c
+@@ -0,0 +1,385 @@
++/*
++ * Copyright 2016 Freescale Semiconductor, Inc.
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <i2c.h>
++#include <fdt_support.h>
++#include <asm/io.h>
++#include <asm/arch/clock.h>
++#include <asm/arch/fsl_serdes.h>
++#include <asm/arch/fdt.h>
++#include <asm/arch/soc.h>
++#include <ahci.h>
++#include <hwconfig.h>
++#include <mmc.h>
++#include <scsi.h>
++#include <fm_eth.h>
++#include <fsl_csu.h>
++#include <fsl_esdhc.h>
++#include <fsl_ifc.h>
++#include <spl.h>
++
++#include "../common/qixis.h"
++#include "ls1046aqds_qixis.h"
++
++DECLARE_GLOBAL_DATA_PTR;
++
++enum {
++	MUX_TYPE_GPIO,
++};
++
++/* LS1046AQDS serdes mux */
++#define CFG_SD_MUX1_SLOT2	0x0 /* SLOT2 TX/RX0 */
++#define CFG_SD_MUX1_SLOT1	0x1 /* SLOT1 TX/RX1 */
++#define CFG_SD_MUX2_SLOT3	0x0 /* SLOT3 TX/RX0 */
++#define CFG_SD_MUX2_SLOT1	0x1 /* SLOT1 TX/RX2 */
++#define CFG_SD_MUX3_SLOT4	0x0 /* SLOT4 TX/RX0 */
++#define CFG_SD_MUX3_MUX4	0x1 /* MUX4 */
++#define CFG_SD_MUX4_SLOT3	0x0 /* SLOT3 TX/RX1 */
++#define CFG_SD_MUX4_SLOT1	0x1 /* SLOT1 TX/RX3 */
++#define CFG_UART_MUX_MASK	0x6
++#define CFG_UART_MUX_SHIFT	1
++#define CFG_LPUART_EN		0x1
++
++int checkboard(void)
++{
++	char buf[64];
++#ifndef CONFIG_SD_BOOT
++	u8 sw;
++#endif
++
++	puts("Board: LS1046AQDS, boot from ");
++
++#ifdef CONFIG_SD_BOOT
++	puts("SD\n");
++#else
++	sw = QIXIS_READ(brdcfg[0]);
++	sw = (sw & QIXIS_LBMAP_MASK) >> QIXIS_LBMAP_SHIFT;
++
++	if (sw < 0x8)
++		printf("vBank: %d\n", sw);
++	else if (sw == 0x8)
++		puts("PromJet\n");
++	else if (sw == 0x9)
++		puts("NAND\n");
++	else if (sw == 0xF)
++		printf("QSPI\n");
++	else
++		printf("invalid setting of SW%u\n", QIXIS_LBMAP_SWITCH);
++#endif
++
++	printf("Sys ID: 0x%02x, Sys Ver: 0x%02x\n",
++	       QIXIS_READ(id), QIXIS_READ(arch));
++
++	printf("FPGA:  v%d (%s), build %d\n",
++	       (int)QIXIS_READ(scver), qixis_read_tag(buf),
++	       (int)qixis_read_minor());
++
++	return 0;
++}
++
++bool if_board_diff_clk(void)
++{
++	u8 diff_conf = QIXIS_READ(brdcfg[11]);
++
++	return diff_conf & 0x40;
++}
++
++unsigned long get_board_sys_clk(void)
++{
++	u8 sysclk_conf = QIXIS_READ(brdcfg[1]);
++
++	switch (sysclk_conf & 0x0f) {
++	case QIXIS_SYSCLK_64:
++		return 64000000;
++	case QIXIS_SYSCLK_83:
++		return 83333333;
++	case QIXIS_SYSCLK_100:
++		return 100000000;
++	case QIXIS_SYSCLK_125:
++		return 125000000;
++	case QIXIS_SYSCLK_133:
++		return 133333333;
++	case QIXIS_SYSCLK_150:
++		return 150000000;
++	case QIXIS_SYSCLK_160:
++		return 160000000;
++	case QIXIS_SYSCLK_166:
++		return 166666666;
++	}
++
++	return 66666666;
++}
++
++unsigned long get_board_ddr_clk(void)
++{
++	u8 ddrclk_conf = QIXIS_READ(brdcfg[1]);
++
++	if (if_board_diff_clk())
++		return get_board_sys_clk();
++	switch ((ddrclk_conf & 0x30) >> 4) {
++	case QIXIS_DDRCLK_100:
++		return 100000000;
++	case QIXIS_DDRCLK_125:
++		return 125000000;
++	case QIXIS_DDRCLK_133:
++		return 133333333;
++	}
++
++	return 66666666;
++}
++
++int select_i2c_ch_pca9547(u8 ch)
++{
++	int ret;
++
++	ret = i2c_write(I2C_MUX_PCA_ADDR_PRI, 0, 1, &ch, 1);
++	if (ret) {
++		puts("PCA: failed to select proper channel\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++int dram_init(void)
++{
++	/*
++	 * When resuming from deep sleep, the I2C channel may not be
++	 * in the default channel. So, switch to the default channel
++	 * before accessing DDR SPD.
++	 */
++	select_i2c_ch_pca9547(I2C_MUX_CH_DEFAULT);
++	gd->ram_size = initdram(0);
++
++	return 0;
++}
++
++int i2c_multiplexer_select_vid_channel(u8 channel)
++{
++	return select_i2c_ch_pca9547(channel);
++}
++
++void board_retimer_init(void)
++{
++	u8 reg;
++	int i;
++
++	/* two Retimers connected to I2C1_CH5 and I2C1_CH6 */
++second_retimer:
++	if (i == 1)
++		reg = I2C_MUX_CH6;
++	else
++		reg = I2C_MUX_CH5;
++
++	select_i2c_ch_pca9547(reg);
++
++	/* Access to Control/Shared register */
++	reg = 0x0;
++	i2c_write(I2C_RETIMER_ADDR, 0xff, 1, &reg, 1);
++
++	/* Read device revision and ID */
++	i2c_read(I2C_RETIMER_ADDR, 1, 1, &reg, 1);
++	debug("Retimer version id = 0x%x\n", reg);
++
++	/* Enable Broadcast. All writes target all channel register sets */
++	reg = 0x0c;
++	i2c_write(I2C_RETIMER_ADDR, 0xff, 1, &reg, 1);
++
++	/* Reset Channel Registers */
++	i2c_read(I2C_RETIMER_ADDR, 0, 1, &reg, 1);
++	reg |= 0x4;
++	i2c_write(I2C_RETIMER_ADDR, 0, 1, &reg, 1);
++
++	/* Enable override divider select and Enable Override Output Mux */
++	i2c_read(I2C_RETIMER_ADDR, 9, 1, &reg, 1);
++	reg |= 0x24;
++	i2c_write(I2C_RETIMER_ADDR, 9, 1, &reg, 1);
++
++	/* Select VCO Divider to full rate (000) */
++	i2c_read(I2C_RETIMER_ADDR, 0x18, 1, &reg, 1);
++	reg &= 0x8f;
++	i2c_write(I2C_RETIMER_ADDR, 0x18, 1, &reg, 1);
++
++	/* Selects active PFD MUX Input as Re-timed Data (001) */
++	i2c_read(I2C_RETIMER_ADDR, 0x1e, 1, &reg, 1);
++	reg &= 0x3f;
++	reg |= 0x20;
++	i2c_write(I2C_RETIMER_ADDR, 0x1e, 1, &reg, 1);
++
++	/* Set data rate as 10.3125 Gbps */
++	reg = 0x0;
++	i2c_write(I2C_RETIMER_ADDR, 0x60, 1, &reg, 1);
++	reg = 0xb2;
++	i2c_write(I2C_RETIMER_ADDR, 0x61, 1, &reg, 1);
++	reg = 0x90;
++	i2c_write(I2C_RETIMER_ADDR, 0x62, 1, &reg, 1);
++	reg = 0xb3;
++	i2c_write(I2C_RETIMER_ADDR, 0x63, 1, &reg, 1);
++	reg = 0xcd;
++	i2c_write(I2C_RETIMER_ADDR, 0x64, 1, &reg, 1);
++
++	if (i != 1) {
++		i = 1;
++		goto second_retimer;
++	}
++
++	/*return the default channel*/
++	select_i2c_ch_pca9547(I2C_MUX_CH_DEFAULT);
++}
++
++int board_early_init_f(void)
++{
++#ifdef CONFIG_HAS_FSL_XHCI_USB
++	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
++	u32 usb_pwrfault;
++#endif
++#ifdef CONFIG_LPUART
++	u8 uart;
++#endif
++	fsl_lsch2_early_init_f();
++
++#ifdef CONFIG_HAS_FSL_XHCI_USB
++	out_be32(&scfg->rcwpmuxcr0, 0x3333);
++	out_be32(&scfg->usbdrvvbus_selcr, SCFG_USBDRVVBUS_SELCR_USB1);
++	usb_pwrfault = (SCFG_USBPWRFAULT_SHARED <<
++			SCFG_USBPWRFAULT_USB3_SHIFT) |
++			(SCFG_USBPWRFAULT_SHARED <<
++			SCFG_USBPWRFAULT_USB2_SHIFT) |
++			(SCFG_USBPWRFAULT_SHARED <<
++			SCFG_USBPWRFAULT_USB1_SHIFT);
++	out_be32(&scfg->usbpwrfault_selcr, usb_pwrfault);
++#endif
++
++#ifdef CONFIG_LPUART
++	/* We use lpuart0 as system console */
++	uart = QIXIS_READ(brdcfg[14]);
++	uart &= ~CFG_UART_MUX_MASK;
++	uart |= CFG_LPUART_EN << CFG_UART_MUX_SHIFT;
++	QIXIS_WRITE(brdcfg[14], uart);
++#endif
++
++	return 0;
++}
++
++#ifdef CONFIG_FSL_DEEP_SLEEP
++/* determine if it is a warm boot */
++bool is_warm_boot(void)
++{
++#define DCFG_CCSR_CRSTSR_WDRFR	(1 << 3)
++	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_FSL_GUTS_ADDR;
++
++	if (in_be32(&gur->crstsr) & DCFG_CCSR_CRSTSR_WDRFR)
++		return 1;
++
++	return 0;
++}
++#endif
++
++int config_board_mux(int ctrl_type)
++{
++	u8 reg14;
++
++	reg14 = QIXIS_READ(brdcfg[14]);
++
++	switch (ctrl_type) {
++	case MUX_TYPE_GPIO:
++		reg14 = (reg14 & (~0x30)) | 0x20;
++		break;
++	default:
++		puts("Unsupported mux interface type\n");
++		return -1;
++	}
++
++	QIXIS_WRITE(brdcfg[14], reg14);
++
++	return 0;
++}
++
++int config_serdes_mux(void)
++{
++	return 0;
++}
++
++
++#ifdef CONFIG_MISC_INIT_R
++int misc_init_r(void)
++{
++	if (hwconfig("gpio"))
++		config_board_mux(MUX_TYPE_GPIO);
++
++	return 0;
++}
++#endif
++
++int board_init(void)
++{
++	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)
++				   CONFIG_SYS_CCI400_ADDR;
++
++	/* Set CCI-400 control override register to enable barrier
++	 * transaction */
++	out_le32(&cci->ctrl_ord,
++		 CCI400_CTRLORD_EN_BARRIER);
++
++	select_i2c_ch_pca9547(I2C_MUX_CH_DEFAULT);
++	board_retimer_init();
++
++#ifdef CONFIG_SYS_FSL_SERDES
++	config_serdes_mux();
++#endif
++
++#ifdef CONFIG_LAYERSCAPE_NS_ACCESS
++	enable_layerscape_ns_access();
++#endif
++
++#ifdef CONFIG_ENV_IS_NOWHERE
++	gd->env_addr = (ulong)&default_environment[0];
++#endif
++	return 0;
++}
++
++#ifdef CONFIG_OF_BOARD_SETUP
++int ft_board_setup(void *blob, bd_t *bd)
++{
++	u64 base[CONFIG_NR_DRAM_BANKS];
++	u64 size[CONFIG_NR_DRAM_BANKS];
++
++	/* fixup DT for the two DDR banks */
++	base[0] = gd->bd->bi_dram[0].start;
++	size[0] = gd->bd->bi_dram[0].size;
++	base[1] = gd->bd->bi_dram[1].start;
++	size[1] = gd->bd->bi_dram[1].size;
++
++	fdt_fixup_memory_banks(blob, base, size, 2);
++	ft_cpu_setup(blob, bd);
++
++#ifdef CONFIG_SYS_DPAA_FMAN
++	fdt_fixup_fman_ethernet(blob);
++	fdt_fixup_board_enet(blob);
++#endif
++	return 0;
++}
++#endif
++
++u8 flash_read8(void *addr)
++{
++	return __raw_readb(addr + 1);
++}
++
++void flash_write16(u16 val, void *addr)
++{
++	u16 shftval = (((val >> 8) & 0xff) | ((val << 8) & 0xff00));
++
++	__raw_writew(shftval, addr);
++}
++
++u16 flash_read16(void *addr)
++{
++	u16 val = __raw_readw(addr);
++
++	return (((val) >> 8) & 0x00ff) | (((val) << 8) & 0xff00);
++}
+diff --git a/board/freescale/ls1046aqds/ls1046aqds_pbi.cfg b/board/freescale/ls1046aqds/ls1046aqds_pbi.cfg
+new file mode 100644
+index 0000000..f072274
+--- /dev/null
++++ b/board/freescale/ls1046aqds/ls1046aqds_pbi.cfg
+@@ -0,0 +1,14 @@
++#Configure Scratch register
++09570600 00000000
++09570604 10000000
++#Alt base register
++09570158 00001000
++#Disable CCI barrier tranaction
++09570178 0000e010
++09180000 00000008
++#USB PHY frequency sel
++09570418 0000009e
++0957041c 0000009e
++09570420 0000009e
++#flush PBI data
++096100c0 000fffff
+diff --git a/board/freescale/ls1046aqds/ls1046aqds_qixis.h b/board/freescale/ls1046aqds/ls1046aqds_qixis.h
+new file mode 100644
+index 0000000..057b79c
+--- /dev/null
++++ b/board/freescale/ls1046aqds/ls1046aqds_qixis.h
+@@ -0,0 +1,39 @@
++/*
++ * Copyright 2016 Freescale Semiconductor, Inc.
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef __LS1043AQDS_QIXIS_H__
++#define __LS1043AQDS_QIXIS_H__
++
++/* Definitions of QIXIS Registers for LS1043AQDS */
++
++/* BRDCFG4[4:7] select EC1 and EC2 as a pair */
++#define BRDCFG4_EMISEL_MASK		0xe0
++#define BRDCFG4_EMISEL_SHIFT		5
++
++/* SYSCLK */
++#define QIXIS_SYSCLK_66			0x0
++#define QIXIS_SYSCLK_83			0x1
++#define QIXIS_SYSCLK_100		0x2
++#define QIXIS_SYSCLK_125		0x3
++#define QIXIS_SYSCLK_133		0x4
++#define QIXIS_SYSCLK_150		0x5
++#define QIXIS_SYSCLK_160		0x6
++#define QIXIS_SYSCLK_166		0x7
++#define QIXIS_SYSCLK_64			0x8
++
++/* DDRCLK */
++#define QIXIS_DDRCLK_66			0x0
++#define QIXIS_DDRCLK_100		0x1
++#define QIXIS_DDRCLK_125		0x2
++#define QIXIS_DDRCLK_133		0x3
++
++/* BRDCFG2 - SD clock*/
++#define QIXIS_SDCLK1_100		0x0
++#define QIXIS_SDCLK1_125		0x1
++#define QIXIS_SDCLK1_165		0x2
++#define QIXIS_SDCLK1_100_SP		0x3
++
++#endif
+diff --git a/board/freescale/ls1046aqds/ls1046aqds_rcw_nand.cfg b/board/freescale/ls1046aqds/ls1046aqds_rcw_nand.cfg
+new file mode 100644
+index 0000000..d87058b
+--- /dev/null
++++ b/board/freescale/ls1046aqds/ls1046aqds_rcw_nand.cfg
+@@ -0,0 +1,7 @@
++#PBL preamble and RCW header
++aa55aa55 01ee0100
++# serdes protocol
++08100010 0a000000 00000000 00000000
++14550002 80004012 e0106000 c1002000
++00000000 00000000 00000000 00038800
++00000000 00001100 00000096 00000001
+diff --git a/board/freescale/ls1046aqds/ls1046aqds_rcw_sd_ifc.cfg b/board/freescale/ls1046aqds/ls1046aqds_rcw_sd_ifc.cfg
+new file mode 100644
+index 0000000..b6b5e0b
+--- /dev/null
++++ b/board/freescale/ls1046aqds/ls1046aqds_rcw_sd_ifc.cfg
+@@ -0,0 +1,8 @@
++#PBL preamble and RCW header
++aa55aa55 01ee0100
++# RCW
++# Enable IFC; disable QSPI
++08100010 0a000000 00000000 00000000
++14550002 80004012 60040000 c1002000
++00000000 00000000 00000000 00038800
++00000000 00001100 00000096 00000001
+diff --git a/board/freescale/ls1046aqds/ls1046aqds_rcw_sd_qspi.cfg b/board/freescale/ls1046aqds/ls1046aqds_rcw_sd_qspi.cfg
+new file mode 100644
+index 0000000..7783521
+--- /dev/null
++++ b/board/freescale/ls1046aqds/ls1046aqds_rcw_sd_qspi.cfg
+@@ -0,0 +1,8 @@
++#PBL preamble and RCW header
++aa55aa55 01ee0100
++# RCW
++# Enable QSPI; disable IFC
++08100010 0a000000 00000000 00000000
++14550002 80004012 60040000 c1002000
++00000000 00000000 00000000 00038800
++20124000 00001100 00000096 00000001
+diff --git a/configs/ls1046aqds_defconfig b/configs/ls1046aqds_defconfig
+new file mode 100644
+index 0000000..fddfbd5
+--- /dev/null
++++ b/configs/ls1046aqds_defconfig
+@@ -0,0 +1,9 @@
++CONFIG_SYS_EXTRA_OPTIONS="SYS_FSL_DDR4"
++CONFIG_ARM=y
++CONFIG_TARGET_LS1046AQDS=y
++CONFIG_SYS_NS16550=y
++CONFIG_DEFAULT_DEVICE_TREE="fsl-ls1046a-qds-duart"
++CONFIG_OF_CONTROL=y
++CONFIG_DM=y
++CONFIG_SPI_FLASH=y
++CONFIG_DM_SPI=y
+diff --git a/configs/ls1046aqds_lpuart_defconfig b/configs/ls1046aqds_lpuart_defconfig
+new file mode 100644
+index 0000000..ab64cb5
+--- /dev/null
++++ b/configs/ls1046aqds_lpuart_defconfig
+@@ -0,0 +1,10 @@
++CONFIG_ARM=y
++CONFIG_TARGET_LS1046AQDS=y
++CONFIG_DM_SERIAL=y
++CONFIG_DM_SPI=y
++CONFIG_DEFAULT_DEVICE_TREE="fsl-ls1046a-qds-lpuart"
++CONFIG_SYS_EXTRA_OPTIONS="SYS_FSL_DDR4,LPUART"
++CONFIG_OF_CONTROL=y
++CONFIG_DM=y
++CONFIG_SPI_FLASH=y
++CONFIG_FSL_LPUART=y
+diff --git a/configs/ls1046aqds_nand_defconfig b/configs/ls1046aqds_nand_defconfig
+new file mode 100644
+index 0000000..ef64fcf
+--- /dev/null
++++ b/configs/ls1046aqds_nand_defconfig
+@@ -0,0 +1,10 @@
++CONFIG_SPL=y
++CONFIG_SYS_EXTRA_OPTIONS="SYS_FSL_DDR4,RAMBOOT_PBL,SPL_FSL_PBL,NAND_BOOT"
++CONFIG_ARM=y
++CONFIG_TARGET_LS1046AQDS=y
++CONFIG_SYS_NS16550=y
++CONFIG_DEFAULT_DEVICE_TREE="fsl-ls1046a-qds-duart"
++CONFIG_OF_CONTROL=y
++CONFIG_DM=y
++CONFIG_SPI_FLASH=y
++CONFIG_DM_SPI=y
+diff --git a/configs/ls1046aqds_qspi_defconfig b/configs/ls1046aqds_qspi_defconfig
+new file mode 100644
+index 0000000..de43987
+--- /dev/null
++++ b/configs/ls1046aqds_qspi_defconfig
+@@ -0,0 +1,9 @@
++CONFIG_ARM=y
++CONFIG_TARGET_LS1046AQDS=y
++CONFIG_SYS_EXTRA_OPTIONS="SYS_FSL_DDR4,QSPI_BOOT"
++CONFIG_DEFAULT_DEVICE_TREE="fsl-ls1046a-qds-duart"
++CONFIG_SYS_NS16550=y
++CONFIG_OF_CONTROL=y
++CONFIG_DM=y
++CONFIG_SPI_FLASH=y
++CONFIG_DM_SPI=y
+diff --git a/configs/ls1046aqds_sdcard_ifc_defconfig b/configs/ls1046aqds_sdcard_ifc_defconfig
+new file mode 100644
+index 0000000..0eef02f
+--- /dev/null
++++ b/configs/ls1046aqds_sdcard_ifc_defconfig
+@@ -0,0 +1,10 @@
++CONFIG_SPL=y
++CONFIG_SYS_EXTRA_OPTIONS="SYS_FSL_DDR4,RAMBOOT_PBL,SPL_FSL_PBL,SD_BOOT"
++CONFIG_ARM=y
++CONFIG_TARGET_LS1046AQDS=y
++CONFIG_SYS_NS16550=y
++CONFIG_DEFAULT_DEVICE_TREE="fsl-ls1046a-qds-duart"
++CONFIG_OF_CONTROL=y
++CONFIG_DM=y
++CONFIG_SPI_FLASH=y
++CONFIG_DM_SPI=y
+diff --git a/configs/ls1046aqds_sdcard_qspi_defconfig b/configs/ls1046aqds_sdcard_qspi_defconfig
+new file mode 100644
+index 0000000..6423fec
+--- /dev/null
++++ b/configs/ls1046aqds_sdcard_qspi_defconfig
+@@ -0,0 +1,10 @@
++CONFIG_ARM=y
++CONFIG_TARGET_LS1046AQDS=y
++CONFIG_SPL=y
++CONFIG_SYS_EXTRA_OPTIONS="SYS_FSL_DDR4,RAMBOOT_PBL,SPL_FSL_PBL,SD_BOOT,SD_BOOT_QSPI"
++CONFIG_DEFAULT_DEVICE_TREE="fsl-ls1046a-qds-duart"
++CONFIG_SYS_NS16550=y
++CONFIG_OF_CONTROL=y
++CONFIG_DM=y
++CONFIG_SPI_FLASH=y
++CONFIG_DM_SPI=y
+diff --git a/include/configs/ls1046a_common.h b/include/configs/ls1046a_common.h
+index 14d57aa..41a0140 100644
+--- a/include/configs/ls1046a_common.h
++++ b/include/configs/ls1046a_common.h
+@@ -93,6 +93,33 @@
+ #define CONFIG_SYS_MONITOR_LEN		0xa0000
+ #endif
+ 
++/* NAND SPL */
++#ifdef CONFIG_NAND_BOOT
++#define CONFIG_SPL_PBL_PAD
++#define CONFIG_SPL_FRAMEWORK
++#define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/armv8/u-boot-spl.lds"
++#define CONFIG_SPL_TARGET		"u-boot-with-spl.bin"
++#define CONFIG_SPL_LIBCOMMON_SUPPORT
++#define CONFIG_SPL_LIBGENERIC_SUPPORT
++#define CONFIG_SPL_ENV_SUPPORT
++#define CONFIG_SPL_WATCHDOG_SUPPORT
++#define CONFIG_SPL_I2C_SUPPORT
++#define CONFIG_SPL_SERIAL_SUPPORT
++#define CONFIG_SPL_MPC8XXX_INIT_DDR_SUPPORT
++#define CONFIG_SPL_NAND_SUPPORT
++#define CONFIG_SPL_DRIVERS_MISC_SUPPORT
++#define CONFIG_SPL_TEXT_BASE		0x10000000
++#define CONFIG_SPL_MAX_SIZE		0x1a000
++#define CONFIG_SPL_STACK		0x1001d000
++#define CONFIG_SYS_NAND_U_BOOT_DST	CONFIG_SYS_TEXT_BASE
++#define CONFIG_SYS_NAND_U_BOOT_START	CONFIG_SYS_TEXT_BASE
++#define CONFIG_SYS_SPL_MALLOC_START	0x80200000
++#define CONFIG_SPL_BSS_START_ADDR	0x80100000
++#define CONFIG_SYS_SPL_MALLOC_SIZE	0x100000
++#define CONFIG_SPL_BSS_MAX_SIZE		0x80000
++#define CONFIG_SYS_MONITOR_LEN		0xa0000
++#endif
++
+ /* I2C */
+ #define CONFIG_CMD_I2C
+ #define CONFIG_SYS_I2C
+@@ -175,13 +202,19 @@
+  */
+ #define CONFIG_SYS_QE_FMAN_FW_IN_MMC
+ #define CONFIG_SYS_FMAN_FW_ADDR		(512 * 0x820)
+-#else
++#elif defined(CONFIG_QSPI_BOOT)
+ #define CONFIG_SYS_QE_FW_IN_SPIFLASH
+ #define CONFIG_SYS_FMAN_FW_ADDR		0x40300000
+ #define CONFIG_ENV_SPI_BUS		0
+ #define CONFIG_ENV_SPI_CS		0
+ #define CONFIG_ENV_SPI_MAX_HZ		1000000
+ #define CONFIG_ENV_SPI_MODE		0x03
++#elif defined(CONFIG_NAND_BOOT)
++#define CONFIG_SYS_QE_FMAN_FW_IN_NAND
++#define CONFIG_SYS_FMAN_FW_ADDR		(11 * CONFIG_SYS_NAND_BLOCK_SIZE)
++#else
++#define CONFIG_SYS_QE_FMAN_FW_IN_NOR
++#define CONFIG_SYS_FMAN_FW_ADDR		0x60300000
+ #endif
+ #define CONFIG_SYS_QE_FMAN_FW_LENGTH	0x10000
+ #define CONFIG_SYS_FDT_PAD		(0x3000 + CONFIG_SYS_QE_FMAN_FW_LENGTH)
+diff --git a/include/configs/ls1046aqds.h b/include/configs/ls1046aqds.h
+new file mode 100644
+index 0000000..c8f240c
+--- /dev/null
++++ b/include/configs/ls1046aqds.h
+@@ -0,0 +1,507 @@
++/*
++ * Copyright 2016 Freescale Semiconductor, Inc.
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef __LS1046AQDS_H__
++#define __LS1046AQDS_H__
++
++#include "ls1046a_common.h"
++
++#define CONFIG_DISPLAY_CPUINFO
++#ifdef CONFIG_QSPI_BOOT
++#define CONFIG_DISPLAY_BOARDINFO_LATE
++#else
++#define CONFIG_DISPLAY_BOARDINFO
++#endif
++
++#if defined(CONFIG_NAND_BOOT) || defined(CONFIG_SD_BOOT)
++#define CONFIG_SYS_TEXT_BASE		0x82000000
++#elif defined(CONFIG_QSPI_BOOT)
++#define CONFIG_SYS_TEXT_BASE		0x40010000
++#else
++#define CONFIG_SYS_TEXT_BASE		0x60100000
++#endif
++
++#ifndef __ASSEMBLY__
++unsigned long get_board_sys_clk(void);
++unsigned long get_board_ddr_clk(void);
++#endif
++
++#define CONFIG_SYS_CLK_FREQ		100000000
++#define CONFIG_DDR_CLK_FREQ		100000000
++
++#define CONFIG_SKIP_LOWLEVEL_INIT
++
++#define CONFIG_LAYERSCAPE_NS_ACCESS
++
++#define CONFIG_DIMM_SLOTS_PER_CTLR	1
++/* Physical Memory Map */
++#define CONFIG_CHIP_SELECTS_PER_CTRL	4
++#define CONFIG_NR_DRAM_BANKS		2
++
++#define CONFIG_DDR_SPD
++#define SPD_EEPROM_ADDRESS		0x51
++#define CONFIG_SYS_SPD_BUS_NUM		0
++
++#define CONFIG_FSL_DDR_INTERACTIVE	/* Interactive debugging */
++#ifndef CONFIG_SYS_FSL_DDR4
++#define CONFIG_SYS_FSL_DDR3		/* Use DDR3 memory */
++#endif
++
++#define CONFIG_DDR_ECC
++#ifdef CONFIG_DDR_ECC
++#define CONFIG_ECC_INIT_VIA_DDRCONTROLLER
++#define CONFIG_MEM_INIT_VALUE           0xdeadbeef
++#endif
++
++#define CONFIG_SYS_HAS_SERDES
++
++#ifdef CONFIG_FSL_DSPI
++#define CONFIG_SPI_FLASH_SST		/* cs1 */
++#define CONFIG_SPI_FLASH_EON		/* cs2 */
++#if !defined(CONFIG_QSPI_BOOT) && !defined(CONFIG_SD_BOOT_QSPI)
++#define CONFIG_SF_DEFAULT_BUS		1
++#define CONFIG_SF_DEFAULT_CS		0
++#endif
++#endif
++
++/* QSPI device */
++#if defined(CONFIG_QSPI_BOOT) || defined(CONFIG_SD_BOOT_QSPI)
++#define CONFIG_FSL_QSPI
++#ifdef CONFIG_FSL_QSPI
++#define CONFIG_SPI_FLASH_SPANSION
++#define FSL_QSPI_FLASH_SIZE		(1 << 24)
++#define FSL_QSPI_FLASH_NUM		2
++#endif
++#endif
++
++#ifdef CONFIG_SYS_DPAA_FMAN
++#define CONFIG_FMAN_ENET
++#define CONFIG_PHYLIB
++#define CONFIG_PHY_VITESSE
++#define CONFIG_PHY_REALTEK
++#define CONFIG_PHYLIB_10G
++#define RGMII_PHY1_ADDR		0x1
++#define RGMII_PHY2_ADDR		0x2
++#define SGMII_CARD_PORT1_PHY_ADDR 0x1C
++#define SGMII_CARD_PORT2_PHY_ADDR 0x1D
++#define SGMII_CARD_PORT3_PHY_ADDR 0x1E
++#define SGMII_CARD_PORT4_PHY_ADDR 0x1F
++/* PHY address on QSGMII riser card on slot 1 */
++#define QSGMII_CARD_PORT1_PHY_ADDR_S1 0x4
++#define QSGMII_CARD_PORT2_PHY_ADDR_S1 0x5
++#define QSGMII_CARD_PORT3_PHY_ADDR_S1 0x6
++#define QSGMII_CARD_PORT4_PHY_ADDR_S1 0x7
++/* PHY address on QSGMII riser card on slot 2 */
++#define QSGMII_CARD_PORT1_PHY_ADDR_S2 0x8
++#define QSGMII_CARD_PORT2_PHY_ADDR_S2 0x9
++#define QSGMII_CARD_PORT3_PHY_ADDR_S2 0xA
++#define QSGMII_CARD_PORT4_PHY_ADDR_S2 0xB
++#endif
++
++#ifdef CONFIG_RAMBOOT_PBL
++#define CONFIG_SYS_FSL_PBL_PBI board/freescale/ls1046aqds/ls1046aqds_pbi.cfg
++#endif
++
++#ifdef CONFIG_NAND_BOOT
++#define CONFIG_SYS_FSL_PBL_RCW board/freescale/ls1046aqds/ls1046aqds_rcw_nand.cfg
++#endif
++
++#ifdef CONFIG_SD_BOOT
++#ifdef CONFIG_SD_BOOT_QSPI
++#define CONFIG_SYS_FSL_PBL_RCW \
++	board/freescale/ls1046aqds/ls1046aqds_rcw_sd_qspi.cfg
++#else
++#define CONFIG_SYS_FSL_PBL_RCW board/freescale/ls1046aqds/ls1046aqds_rcw_sd_ifc.cfg
++#endif
++#endif
++
++/* IFC */
++#if !defined(CONFIG_QSPI_BOOT) && !defined(CONFIG_SD_BOOT_QSPI)
++#define	CONFIG_FSL_IFC
++/*
++ * CONFIG_SYS_FLASH_BASE has the final address (core view)
++ * CONFIG_SYS_FLASH_BASE_PHYS has the final address (IFC view)
++ * CONFIG_SYS_FLASH_BASE_PHYS_EARLY has the temporary IFC address
++ * CONFIG_SYS_TEXT_BASE is linked to 0x60000000 for booting
++ */
++#define CONFIG_SYS_FLASH_BASE			0x60000000
++#define CONFIG_SYS_FLASH_BASE_PHYS		CONFIG_SYS_FLASH_BASE
++#define CONFIG_SYS_FLASH_BASE_PHYS_EARLY	0x00000000
++
++#ifndef CONFIG_SYS_NO_FLASH
++#define CONFIG_FLASH_CFI_DRIVER
++#define CONFIG_SYS_FLASH_CFI
++#define CONFIG_SYS_FLASH_USE_BUFFER_WRITE
++#define CONFIG_SYS_FLASH_QUIET_TEST
++#define CONFIG_FLASH_SHOW_PROGRESS	45	/* count down from 45/5: 9..1 */
++#endif
++#endif
++
++/* LPUART */
++#ifdef CONFIG_LPUART
++#define CONFIG_LPUART_32B_REG
++#endif
++
++/* SATA */
++#define CONFIG_LIBATA
++#define CONFIG_SCSI_AHCI
++#define CONFIG_SCSI_AHCI_PLAT
++#define CONFIG_CMD_SCSI
++#define CONFIG_CMD_FAT
++#define CONFIG_CMD_EXT2
++#define CONFIG_DOS_PARTITION
++#define CONFIG_BOARD_LATE_INIT
++
++
++/* EEPROM */
++#define CONFIG_ID_EEPROM
++#define CONFIG_SYS_I2C_EEPROM_NXID
++#define CONFIG_SYS_EEPROM_BUS_NUM		0
++#define CONFIG_SYS_I2C_EEPROM_ADDR		0x57
++#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN		1
++#define CONFIG_SYS_EEPROM_PAGE_WRITE_BITS	3
++#define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS	5
++
++#define CONFIG_SYS_SATA				AHCI_BASE_ADDR
++
++#define CONFIG_SYS_SCSI_MAX_SCSI_ID		1
++#define CONFIG_SYS_SCSI_MAX_LUN			1
++#define CONFIG_SYS_SCSI_MAX_DEVICE		(CONFIG_SYS_SCSI_MAX_SCSI_ID * \
++						CONFIG_SYS_SCSI_MAX_LUN)
++
++/*
++ * IFC Definitions
++ */
++#if !defined(CONFIG_QSPI_BOOT) && !defined(CONFIG_SD_BOOT_QSPI)
++#define CONFIG_SYS_NOR0_CSPR_EXT	(0x0)
++#define CONFIG_SYS_NOR0_CSPR	(CSPR_PHYS_ADDR(CONFIG_SYS_FLASH_BASE_PHYS) | \
++				CSPR_PORT_SIZE_16 | \
++				CSPR_MSEL_NOR | \
++				CSPR_V)
++#define CONFIG_SYS_NOR1_CSPR_EXT	(0x0)
++#define CONFIG_SYS_NOR1_CSPR	(CSPR_PHYS_ADDR(CONFIG_SYS_FLASH_BASE_PHYS \
++				+ 0x8000000) | \
++				CSPR_PORT_SIZE_16 | \
++				CSPR_MSEL_NOR | \
++				CSPR_V)
++#define CONFIG_SYS_NOR_AMASK		IFC_AMASK(128 * 1024 * 1024)
++
++#define CONFIG_SYS_NOR_CSOR		(CSOR_NOR_ADM_SHIFT(4) | \
++					CSOR_NOR_TRHZ_80)
++#define CONFIG_SYS_NOR_FTIM0		(FTIM0_NOR_TACSE(0x4) | \
++					FTIM0_NOR_TEADC(0x5) | \
++					FTIM0_NOR_TEAHC(0x5))
++#define CONFIG_SYS_NOR_FTIM1		(FTIM1_NOR_TACO(0x35) | \
++					FTIM1_NOR_TRAD_NOR(0x1a) | \
++					FTIM1_NOR_TSEQRAD_NOR(0x13))
++#define CONFIG_SYS_NOR_FTIM2		(FTIM2_NOR_TCS(0x4) | \
++					FTIM2_NOR_TCH(0x4) | \
++					FTIM2_NOR_TWPH(0xe) | \
++					FTIM2_NOR_TWP(0x1c))
++#define CONFIG_SYS_NOR_FTIM3		0
++
++#define CONFIG_SYS_MAX_FLASH_BANKS	2	/* number of banks */
++#define CONFIG_SYS_MAX_FLASH_SECT	1024	/* sectors per device */
++#define CONFIG_SYS_FLASH_ERASE_TOUT	60000	/* Flash Erase Timeout (ms) */
++#define CONFIG_SYS_FLASH_WRITE_TOUT	500	/* Flash Write Timeout (ms) */
++
++#define CONFIG_SYS_FLASH_EMPTY_INFO
++#define CONFIG_SYS_FLASH_BANKS_LIST	{CONFIG_SYS_FLASH_BASE_PHYS, \
++					CONFIG_SYS_FLASH_BASE_PHYS + 0x8000000}
++
++#define CONFIG_CFI_FLASH_USE_WEAK_ACCESSORS
++#define CONFIG_SYS_WRITE_SWAPPED_DATA
++
++/*
++ * NAND Flash Definitions
++ */
++#define CONFIG_NAND_FSL_IFC
++
++#define CONFIG_SYS_NAND_BASE		0x7e800000
++#define CONFIG_SYS_NAND_BASE_PHYS	CONFIG_SYS_NAND_BASE
++
++#define CONFIG_SYS_NAND_CSPR_EXT	(0x0)
++
++#define CONFIG_SYS_NAND_CSPR	(CSPR_PHYS_ADDR(CONFIG_SYS_NAND_BASE_PHYS) \
++				| CSPR_PORT_SIZE_8	\
++				| CSPR_MSEL_NAND	\
++				| CSPR_V)
++#define CONFIG_SYS_NAND_AMASK	IFC_AMASK(64*1024)
++#define CONFIG_SYS_NAND_CSOR	(CSOR_NAND_ECC_ENC_EN	/* ECC on encode */ \
++				| CSOR_NAND_ECC_DEC_EN	/* ECC on decode */ \
++				| CSOR_NAND_ECC_MODE_4	/* 4-bit ECC */ \
++				| CSOR_NAND_RAL_3	/* RAL = 3 Bytes */ \
++				| CSOR_NAND_PGS_2K	/* Page Size = 2K */ \
++				| CSOR_NAND_SPRZ_64	/* Spare size = 64 */ \
++				| CSOR_NAND_PB(64))	/* 64 Pages Per Block */
++
++#define CONFIG_SYS_NAND_ONFI_DETECTION
++
++#define CONFIG_SYS_NAND_FTIM0		(FTIM0_NAND_TCCST(0x7) | \
++					FTIM0_NAND_TWP(0x18)   | \
++					FTIM0_NAND_TWCHT(0x7) | \
++					FTIM0_NAND_TWH(0xa))
++#define CONFIG_SYS_NAND_FTIM1		(FTIM1_NAND_TADLE(0x32) | \
++					FTIM1_NAND_TWBE(0x39)  | \
++					FTIM1_NAND_TRR(0xe)   | \
++					FTIM1_NAND_TRP(0x18))
++#define CONFIG_SYS_NAND_FTIM2		(FTIM2_NAND_TRAD(0xf) | \
++					FTIM2_NAND_TREH(0xa) | \
++					FTIM2_NAND_TWHRE(0x1e))
++#define CONFIG_SYS_NAND_FTIM3           0x0
++
++#define CONFIG_SYS_NAND_BASE_LIST	{ CONFIG_SYS_NAND_BASE }
++#define CONFIG_SYS_MAX_NAND_DEVICE	1
++#define CONFIG_MTD_NAND_VERIFY_WRITE
++#define CONFIG_CMD_NAND
++
++#define CONFIG_SYS_NAND_BLOCK_SIZE	(128 * 1024)
++#endif
++
++#ifdef CONFIG_NAND_BOOT
++#define CONFIG_SPL_PAD_TO		0x20000		/* block aligned */
++#define CONFIG_SYS_NAND_U_BOOT_OFFS	CONFIG_SPL_PAD_TO
++#define CONFIG_SYS_NAND_U_BOOT_SIZE	(640 << 10)
++#endif
++
++#if defined(CONFIG_QSPI_BOOT) || defined(CONFIG_SD_BOOT_QSPI)
++#define CONFIG_QIXIS_I2C_ACCESS
++#define CONFIG_SYS_NO_FLASH
++#undef CONFIG_CMD_IMLS
++#endif
++
++/*
++ * QIXIS Definitions
++ */
++#define CONFIG_FSL_QIXIS
++
++#ifdef CONFIG_FSL_QIXIS
++#define QIXIS_BASE			0x7fb00000
++#define QIXIS_BASE_PHYS			QIXIS_BASE
++#define CONFIG_SYS_I2C_FPGA_ADDR	0x66
++#define QIXIS_LBMAP_SWITCH		6
++#define QIXIS_LBMAP_MASK		0x0f
++#define QIXIS_LBMAP_SHIFT		0
++#define QIXIS_LBMAP_DFLTBANK		0x00
++#define QIXIS_LBMAP_ALTBANK		0x04
++#define QIXIS_LBMAP_NAND		0x09
++#define QIXIS_LBMAP_SD			0x00
++#define QIXIS_LBMAP_SD_QSPI		0xff
++#define QIXIS_LBMAP_QSPI		0xff
++#define QIXIS_RCW_SRC_NAND		0x106
++#define QIXIS_RCW_SRC_SD		0x040
++#define QIXIS_RCW_SRC_QSPI		0x045
++#define QIXIS_RST_CTL_RESET		0x41
++#define QIXIS_RCFG_CTL_RECONFIG_IDLE	0x20
++#define QIXIS_RCFG_CTL_RECONFIG_START	0x21
++#define QIXIS_RCFG_CTL_WATCHDOG_ENBLE	0x08
++
++#define CONFIG_SYS_FPGA_CSPR_EXT	(0x0)
++#define CONFIG_SYS_FPGA_CSPR		(CSPR_PHYS_ADDR(QIXIS_BASE_PHYS) | \
++					CSPR_PORT_SIZE_8 | \
++					CSPR_MSEL_GPCM | \
++					CSPR_V)
++#define CONFIG_SYS_FPGA_AMASK		IFC_AMASK(64 * 1024)
++#define CONFIG_SYS_FPGA_CSOR		(CSOR_NOR_ADM_SHIFT(4) | \
++					CSOR_NOR_NOR_MODE_AVD_NOR | \
++					CSOR_NOR_TRHZ_80)
++
++/*
++ * QIXIS Timing parameters for IFC GPCM
++ */
++#define CONFIG_SYS_FPGA_FTIM0		(FTIM0_GPCM_TACSE(0xc) | \
++					FTIM0_GPCM_TEADC(0x20) | \
++					FTIM0_GPCM_TEAHC(0x10))
++#define CONFIG_SYS_FPGA_FTIM1		(FTIM1_GPCM_TACO(0x50) | \
++					FTIM1_GPCM_TRAD(0x1f))
++#define CONFIG_SYS_FPGA_FTIM2		(FTIM2_GPCM_TCS(0x8) | \
++					FTIM2_GPCM_TCH(0x8) | \
++					FTIM2_GPCM_TWP(0xf0))
++#define CONFIG_SYS_FPGA_FTIM3		0x0
++#endif
++
++#ifdef CONFIG_NAND_BOOT
++#define CONFIG_SYS_CSPR0_EXT		CONFIG_SYS_NAND_CSPR_EXT
++#define CONFIG_SYS_CSPR0		CONFIG_SYS_NAND_CSPR
++#define CONFIG_SYS_AMASK0		CONFIG_SYS_NAND_AMASK
++#define CONFIG_SYS_CSOR0		CONFIG_SYS_NAND_CSOR
++#define CONFIG_SYS_CS0_FTIM0		CONFIG_SYS_NAND_FTIM0
++#define CONFIG_SYS_CS0_FTIM1		CONFIG_SYS_NAND_FTIM1
++#define CONFIG_SYS_CS0_FTIM2		CONFIG_SYS_NAND_FTIM2
++#define CONFIG_SYS_CS0_FTIM3		CONFIG_SYS_NAND_FTIM3
++#define CONFIG_SYS_CSPR1_EXT		CONFIG_SYS_NOR0_CSPR_EXT
++#define CONFIG_SYS_CSPR1		CONFIG_SYS_NOR0_CSPR
++#define CONFIG_SYS_AMASK1		CONFIG_SYS_NOR_AMASK
++#define CONFIG_SYS_CSOR1		CONFIG_SYS_NOR_CSOR
++#define CONFIG_SYS_CS1_FTIM0		CONFIG_SYS_NOR_FTIM0
++#define CONFIG_SYS_CS1_FTIM1		CONFIG_SYS_NOR_FTIM1
++#define CONFIG_SYS_CS1_FTIM2		CONFIG_SYS_NOR_FTIM2
++#define CONFIG_SYS_CS1_FTIM3		CONFIG_SYS_NOR_FTIM3
++#define CONFIG_SYS_CSPR2_EXT		CONFIG_SYS_NOR1_CSPR_EXT
++#define CONFIG_SYS_CSPR2		CONFIG_SYS_NOR1_CSPR
++#define CONFIG_SYS_AMASK2		CONFIG_SYS_NOR_AMASK
++#define CONFIG_SYS_CSOR2		CONFIG_SYS_NOR_CSOR
++#define CONFIG_SYS_CS2_FTIM0		CONFIG_SYS_NOR_FTIM0
++#define CONFIG_SYS_CS2_FTIM1		CONFIG_SYS_NOR_FTIM1
++#define CONFIG_SYS_CS2_FTIM2		CONFIG_SYS_NOR_FTIM2
++#define CONFIG_SYS_CS2_FTIM3		CONFIG_SYS_NOR_FTIM3
++#define CONFIG_SYS_CSPR3_EXT		CONFIG_SYS_FPGA_CSPR_EXT
++#define CONFIG_SYS_CSPR3		CONFIG_SYS_FPGA_CSPR
++#define CONFIG_SYS_AMASK3		CONFIG_SYS_FPGA_AMASK
++#define CONFIG_SYS_CSOR3		CONFIG_SYS_FPGA_CSOR
++#define CONFIG_SYS_CS3_FTIM0		CONFIG_SYS_FPGA_FTIM0
++#define CONFIG_SYS_CS3_FTIM1		CONFIG_SYS_FPGA_FTIM1
++#define CONFIG_SYS_CS3_FTIM2		CONFIG_SYS_FPGA_FTIM2
++#define CONFIG_SYS_CS3_FTIM3		CONFIG_SYS_FPGA_FTIM3
++#else
++#define CONFIG_SYS_CSPR0_EXT		CONFIG_SYS_NOR0_CSPR_EXT
++#define CONFIG_SYS_CSPR0		CONFIG_SYS_NOR0_CSPR
++#define CONFIG_SYS_AMASK0		CONFIG_SYS_NOR_AMASK
++#define CONFIG_SYS_CSOR0		CONFIG_SYS_NOR_CSOR
++#define CONFIG_SYS_CS0_FTIM0		CONFIG_SYS_NOR_FTIM0
++#define CONFIG_SYS_CS0_FTIM1		CONFIG_SYS_NOR_FTIM1
++#define CONFIG_SYS_CS0_FTIM2		CONFIG_SYS_NOR_FTIM2
++#define CONFIG_SYS_CS0_FTIM3		CONFIG_SYS_NOR_FTIM3
++#define CONFIG_SYS_CSPR1_EXT		CONFIG_SYS_NOR1_CSPR_EXT
++#define CONFIG_SYS_CSPR1		CONFIG_SYS_NOR1_CSPR
++#define CONFIG_SYS_AMASK1		CONFIG_SYS_NOR_AMASK
++#define CONFIG_SYS_CSOR1		CONFIG_SYS_NOR_CSOR
++#define CONFIG_SYS_CS1_FTIM0		CONFIG_SYS_NOR_FTIM0
++#define CONFIG_SYS_CS1_FTIM1		CONFIG_SYS_NOR_FTIM1
++#define CONFIG_SYS_CS1_FTIM2		CONFIG_SYS_NOR_FTIM2
++#define CONFIG_SYS_CS1_FTIM3		CONFIG_SYS_NOR_FTIM3
++#define CONFIG_SYS_CSPR2_EXT		CONFIG_SYS_NAND_CSPR_EXT
++#define CONFIG_SYS_CSPR2		CONFIG_SYS_NAND_CSPR
++#define CONFIG_SYS_AMASK2		CONFIG_SYS_NAND_AMASK
++#define CONFIG_SYS_CSOR2		CONFIG_SYS_NAND_CSOR
++#define CONFIG_SYS_CS2_FTIM0		CONFIG_SYS_NAND_FTIM0
++#define CONFIG_SYS_CS2_FTIM1		CONFIG_SYS_NAND_FTIM1
++#define CONFIG_SYS_CS2_FTIM2		CONFIG_SYS_NAND_FTIM2
++#define CONFIG_SYS_CS2_FTIM3		CONFIG_SYS_NAND_FTIM3
++#define CONFIG_SYS_CSPR3_EXT		CONFIG_SYS_FPGA_CSPR_EXT
++#define CONFIG_SYS_CSPR3		CONFIG_SYS_FPGA_CSPR
++#define CONFIG_SYS_AMASK3		CONFIG_SYS_FPGA_AMASK
++#define CONFIG_SYS_CSOR3		CONFIG_SYS_FPGA_CSOR
++#define CONFIG_SYS_CS3_FTIM0		CONFIG_SYS_FPGA_FTIM0
++#define CONFIG_SYS_CS3_FTIM1		CONFIG_SYS_FPGA_FTIM1
++#define CONFIG_SYS_CS3_FTIM2		CONFIG_SYS_FPGA_FTIM2
++#define CONFIG_SYS_CS3_FTIM3		CONFIG_SYS_FPGA_FTIM3
++#endif
++
++/*
++ * I2C bus multiplexer
++ */
++#define I2C_MUX_PCA_ADDR_PRI		0x77
++#define I2C_MUX_PCA_ADDR_SEC		0x76 /* Secondary multiplexer */
++#define I2C_RETIMER_ADDR		0x18
++#define I2C_MUX_CH_DEFAULT		0x8
++#define I2C_MUX_CH_CH7301		0xC
++#define I2C_MUX_CH5			0xD
++#define I2C_MUX_CH6			0xE
++#define I2C_MUX_CH7			0xF
++
++#define I2C_MUX_CH_VOL_MONITOR 0xa
++
++/* Voltage monitor on channel 2*/
++#define I2C_VOL_MONITOR_ADDR           0x40
++#define I2C_VOL_MONITOR_BUS_V_OFFSET   0x2
++#define I2C_VOL_MONITOR_BUS_V_OVF      0x1
++#define I2C_VOL_MONITOR_BUS_V_SHIFT    3
++
++#define CONFIG_VID_FLS_ENV		"ls1046aqds_vdd_mv"
++#ifndef CONFIG_SPL_BUILD
++#define CONFIG_VID
++#endif
++#define CONFIG_VOL_MONITOR_IR36021_SET
++#define CONFIG_VOL_MONITOR_INA220
++/* The lowest and highest voltage allowed for LS1046AQDS */
++#define VDD_MV_MIN			819
++#define VDD_MV_MAX			1212
++
++/* USB */
++#define CONFIG_HAS_FSL_XHCI_USB
++#ifdef CONFIG_HAS_FSL_XHCI_USB
++#define CONFIG_USB_XHCI
++#define CONFIG_USB_XHCI_FSL
++#define CONFIG_USB_XHCI_DWC3
++#define CONFIG_USB_MAX_CONTROLLER_COUNT		3
++#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS	2
++#define CONFIG_CMD_USB
++#define CONFIG_USB_STORAGE
++#define CONFIG_CMD_EXT2
++#endif
++
++/*
++ * Miscellaneous configurable options
++ */
++#define CONFIG_MISC_INIT_R
++#define CONFIG_SYS_LONGHELP		/* undef to save memory */
++#define CONFIG_SYS_HUSH_PARSER		/* use "hush" command parser */
++#define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
++#define CONFIG_SYS_PROMPT		"=> "
++#define CONFIG_AUTO_COMPLETE
++#define CONFIG_SYS_PBSIZE		\
++		(CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
++#define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
++
++#define CONFIG_CMD_GREPENV
++#define CONFIG_CMD_MEMINFO
++#define CONFIG_CMD_MEMTEST
++#define CONFIG_SYS_MEMTEST_START	0x80000000
++#define CONFIG_SYS_MEMTEST_END		0x9fffffff
++
++#define CONFIG_SYS_HZ			1000
++
++/*
++ * Stack sizes
++ * The stack sizes are set up in start.S using the settings below
++ */
++#define CONFIG_STACKSIZE		(30 * 1024)
++
++#define CONFIG_SYS_INIT_SP_OFFSET \
++	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
++
++#ifdef CONFIG_SPL_BUILD
++#define CONFIG_SYS_MONITOR_BASE CONFIG_SPL_TEXT_BASE
++#else
++#define CONFIG_SYS_MONITOR_BASE CONFIG_SYS_TEXT_BASE    /* start of monitor */
++#endif
++
++/*
++ * Environment
++ */
++#define CONFIG_ENV_OVERWRITE
++
++#ifdef CONFIG_NAND_BOOT
++#define CONFIG_ENV_IS_IN_NAND
++#define CONFIG_ENV_SIZE			0x2000
++#define CONFIG_ENV_OFFSET		(10 * CONFIG_SYS_NAND_BLOCK_SIZE)
++#elif defined(CONFIG_SD_BOOT)
++#define CONFIG_ENV_OFFSET		(1024 * 1024)
++#define CONFIG_ENV_IS_IN_MMC
++#define CONFIG_SYS_MMC_ENV_DEV		0
++#define CONFIG_ENV_SIZE			0x2000
++#elif defined(CONFIG_QSPI_BOOT)
++#define CONFIG_ENV_IS_IN_SPI_FLASH
++#define CONFIG_ENV_SIZE			0x2000          /* 8KB */
++#define CONFIG_ENV_OFFSET		0x100000        /* 1MB */
++#define CONFIG_ENV_SECT_SIZE		0x10000
++#else
++#define CONFIG_ENV_IS_IN_FLASH
++#define CONFIG_ENV_ADDR			(CONFIG_SYS_FLASH_BASE + 0x200000)
++#define CONFIG_ENV_SECT_SIZE		0x20000
++#define CONFIG_ENV_SIZE			0x20000
++#endif
++
++#define CONFIG_OF_LIBFDT
++#define CONFIG_OF_BOARD_SETUP
++#define CONFIG_CMD_BOOTZ
++#define CONFIG_CMD_MII
++#define CONFIG_CMDLINE_TAG
++
++#include <asm/fsl_secure_boot.h>
++
++#endif /* __LS1046AQDS_H__ */
+-- 
+2.1.0.27.g96db324
+

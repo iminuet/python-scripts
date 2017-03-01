@@ -1,0 +1,66 @@
+From 764c05ade32eff329ee4aca56d8cc94dbe7e56a1 Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Mon, 11 Apr 2016 14:57:29 +0800
+Subject: [PATCH 10021/10030] ls1046ardb: use fixed DDR timing
+
+Set the dual bank timing as default.
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ board/freescale/ls1046ardb/ddr.c | 5 ++++-
+ include/configs/ls1046ardb.h     | 1 +
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/board/freescale/ls1046ardb/ddr.c b/board/freescale/ls1046ardb/ddr.c
+index 6e6b07d..14d365e 100644
+--- a/board/freescale/ls1046ardb/ddr.c
++++ b/board/freescale/ls1046ardb/ddr.c
+@@ -95,7 +95,7 @@ found:
+ }
+ 
+ #ifdef CONFIG_DDR_FIXED_TIMING
+-#undef CONFIG_DDR_DUAL_BANK
++#define CONFIG_DDR_DUAL_BANK
+ #undef CONFIG_DDR_SINGLE_BANK
+ /*
+  * print_fsl_memctl_config_regs(&ddr_cfg_regs)
+@@ -157,6 +157,7 @@ static phys_size_t fixed_sdram(void)
+ 		.ddr_cdr1		= 0x80040000,
+ 		.ddr_cdr2		= 0x0000a181
+ 	};
++	printf("Using Dual bank\n");
+ #elif CONFIG_DDR_SINGLE_BANK
+ 	/* Single rank (32-bit), no ECC */
+ 	fsl_ddr_cfg_regs_t ddr_cfg_regs = {
+@@ -210,6 +211,7 @@ static phys_size_t fixed_sdram(void)
+ 		.ddr_cdr1		= 0x80040000,
+ 		.ddr_cdr2		= 0x0000a181
+ 	};
++	printf("Using Single bank\n");
+ #else
+ 	/* Original timing */
+ 	fsl_ddr_cfg_regs_t ddr_cfg_regs = {
+@@ -259,6 +261,7 @@ static phys_size_t fixed_sdram(void)
+ 		.ddr_cdr1 = 0x80040000,
+ 		.ddr_cdr2 = 0x0000a181 ////0x0000a180
+ 	};
++	printf("Using Original bank\n");
+ #endif
+ 
+ 	fsl_ddr_set_memctl_regs(&ddr_cfg_regs, 0, 0);
+diff --git a/include/configs/ls1046ardb.h b/include/configs/ls1046ardb.h
+index c0cced9..72a3ffb 100644
+--- a/include/configs/ls1046ardb.h
++++ b/include/configs/ls1046ardb.h
+@@ -39,6 +39,7 @@
+ #define CONFIG_CHIP_SELECTS_PER_CTRL	4
+ #define CONFIG_NR_DRAM_BANKS		2
+ 
++#define CONFIG_DDR_FIXED_TIMING
+ #ifndef CONFIG_DDR_FIXED_TIMING
+ #define CONFIG_DDR_SPD
+ #define SPD_EEPROM_ADDRESS		0x51
+-- 
+2.1.0.27.g96db324
+

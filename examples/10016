@@ -1,0 +1,26 @@
+From 638c7e6cfa643ae4816914ddc7e2229776e8949f Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Fri, 8 Apr 2016 16:40:24 +0800
+Subject: [PATCH 10016/10030] ls1046ardb: enable SPD
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ include/configs/ls1046ardb.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/configs/ls1046ardb.h b/include/configs/ls1046ardb.h
+index 72a3ffb..c0cced9 100644
+--- a/include/configs/ls1046ardb.h
++++ b/include/configs/ls1046ardb.h
+@@ -39,7 +39,6 @@
+ #define CONFIG_CHIP_SELECTS_PER_CTRL	4
+ #define CONFIG_NR_DRAM_BANKS		2
+ 
+-#define CONFIG_DDR_FIXED_TIMING
+ #ifndef CONFIG_DDR_FIXED_TIMING
+ #define CONFIG_DDR_SPD
+ #define SPD_EEPROM_ADDRESS		0x51
+-- 
+2.1.0.27.g96db324
+

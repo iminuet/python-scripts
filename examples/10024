@@ -1,0 +1,28 @@
+From 629b0560bc732068696ad8f0d2a73bb0c9ee5dd7 Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Tue, 12 Apr 2016 13:37:14 +0800
+Subject: [PATCH 10024/10030] sf: Disable 4-KB erase command for SPANSION
+ S25FS512S
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ drivers/mtd/spi/spi_flash.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/mtd/spi/spi_flash.c b/drivers/mtd/spi/spi_flash.c
+index 2d23aee..789fd76 100644
+--- a/drivers/mtd/spi/spi_flash.c
++++ b/drivers/mtd/spi/spi_flash.c
+@@ -1033,7 +1033,7 @@ int spi_flash_scan(struct spi_flash *flash)
+ 	 * sector that is not overlaid by the parameter sectors.
+ 	 * The uniform sector erase command has no effect on parameter sectors.
+ 	 */
+-	if (jedec == 0x0219 && (ext_jedec & 0xff00) == 0x4d00) {
++	if ((ext_jedec & 0xff00) == 0x4d00) {
+ 		int ret;
+ 		u8 id[6];
+ 
+-- 
+2.1.0.27.g96db324
+

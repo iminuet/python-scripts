@@ -1,0 +1,65 @@
+From 4c4fc64a2490b39020c977c0de419f30ad7b8e88 Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Fri, 8 Apr 2016 16:39:49 +0800
+Subject: [PATCH 10015/10030] ls1046ardb: fix SPD paramter
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ board/freescale/ls1046ardb/ddr.c |  3 ---
+ board/freescale/ls1046ardb/ddr.h | 16 +++++-----------
+ 2 files changed, 5 insertions(+), 14 deletions(-)
+
+diff --git a/board/freescale/ls1046ardb/ddr.c b/board/freescale/ls1046ardb/ddr.c
+index c6accbf..6979ab1 100644
+--- a/board/freescale/ls1046ardb/ddr.c
++++ b/board/freescale/ls1046ardb/ddr.c
+@@ -41,9 +41,6 @@ void fsl_ddr_board_options(memctl_options_t *popts,
+ 				popts->wrlvl_start = pbsp->wrlvl_start;
+ 				popts->wrlvl_ctl_2 = pbsp->wrlvl_ctl_2;
+ 				popts->wrlvl_ctl_3 = pbsp->wrlvl_ctl_3;
+-				popts->cpo_override = pbsp->cpo_override;
+-				popts->write_data_delay =
+-					pbsp->write_data_delay;
+ 				goto found;
+ 			}
+ 			pbsp_highest = pbsp;
+diff --git a/board/freescale/ls1046ardb/ddr.h b/board/freescale/ls1046ardb/ddr.h
+index aa04b75..e456bb3 100644
+--- a/board/freescale/ls1046ardb/ddr.h
++++ b/board/freescale/ls1046ardb/ddr.h
+@@ -15,9 +15,6 @@ struct board_specific_parameters {
+ 	u32 wrlvl_start;
+ 	u32 wrlvl_ctl_2;
+ 	u32 wrlvl_ctl_3;
+-	u32 cpo_override;
+-	u32 write_data_delay;
+-	u32 force_2t;
+ };
+ 
+ /*
+@@ -28,16 +25,13 @@ struct board_specific_parameters {
+ static const struct board_specific_parameters udimm0[] = {
+ 	/*
+ 	 * memory controller 0
+-	 *   num|  hi| rank|  clk| wrlvl |   wrlvl   |  wrlvl | cpo  |wrdata|2T
+-	 * ranks| mhz| GB  |adjst| start |   ctl2    |  ctl3  |      |delay |
++	 *   num|  hi| rank|  clk| wrlvl |   wrlvl   |  wrlvl
++	 * ranks| mhz| GB  |adjst| start |   ctl2    |  ctl3
+ 	 */
+-#ifdef CONFIG_SYS_FSL_DDR4
+-	{2,  1666, 0, 4,     7, 0x0808090B, 0x0C0D0E0A,},
++	{2,  1666, 0, 12,    7, 0x0808090B, 0x0C0D0E0A,},
+ 	{2,  1900, 0, 4,     6, 0x08080A0C, 0x0D0E0F0A,},
+-	{1,  1666, 0, 4,     6, 0x0708090B, 0x0C0D0E0A,},
+-	{1,  1900, 0, 4,     9, 0x0A0B0C0B, 0x0D0E0F0D,},
+-	{1,  2200, 0, 4,    10, 0x0B0C0D0C, 0x0E0F110E,},
+-#endif
++	{2,  2300, 0, 4,     5, 0x8675F60B, 0x0A090807,},
++	{2,  2666, 0, 4,     6, 0x0C0B0A07, 0x07070709,},
+ 	{}
+ };
+ 
+-- 
+2.1.0.27.g96db324
+

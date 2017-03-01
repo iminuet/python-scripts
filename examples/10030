@@ -1,0 +1,41 @@
+From 5e268f08ccc78c9523cea08701bedc5067b544c1 Mon Sep 17 00:00:00 2001
+From: Mingkai Hu <mingkai.hu@nxp.com>
+Date: Tue, 12 Apr 2016 22:54:36 +0800
+Subject: [PATCH 10030/10030] ls1046ardb: fix CPLD chip select
+
+Signed-off-by: Mingkai Hu <mingkai.hu@nxp.com>
+Signed-off-by: Gong Qianyu <Qianyu.Gong@nxp.com>
+---
+ include/configs/ls1046ardb.h | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/include/configs/ls1046ardb.h b/include/configs/ls1046ardb.h
+index 25f75eb..cba539c 100644
+--- a/include/configs/ls1046ardb.h
++++ b/include/configs/ls1046ardb.h
+@@ -158,14 +158,14 @@
+ #define CONFIG_SYS_CS0_FTIM2		CONFIG_SYS_NAND_FTIM2
+ #define CONFIG_SYS_CS0_FTIM3		CONFIG_SYS_NAND_FTIM3
+ 
+-#define CONFIG_SYS_CSPR3_EXT		CONFIG_SYS_CPLD_CSPR_EXT
+-#define CONFIG_SYS_CSPR3		CONFIG_SYS_CPLD_CSPR
+-#define CONFIG_SYS_AMASK3		CONFIG_SYS_CPLD_AMASK
+-#define CONFIG_SYS_CSOR3		CONFIG_SYS_CPLD_CSOR
+-#define CONFIG_SYS_CS3_FTIM0		CONFIG_SYS_CPLD_FTIM0
+-#define CONFIG_SYS_CS3_FTIM1		CONFIG_SYS_CPLD_FTIM1
+-#define CONFIG_SYS_CS3_FTIM2		CONFIG_SYS_CPLD_FTIM2
+-#define CONFIG_SYS_CS3_FTIM3		CONFIG_SYS_CPLD_FTIM3
++#define CONFIG_SYS_CSPR2_EXT		CONFIG_SYS_CPLD_CSPR_EXT
++#define CONFIG_SYS_CSPR2		CONFIG_SYS_CPLD_CSPR
++#define CONFIG_SYS_AMASK2		CONFIG_SYS_CPLD_AMASK
++#define CONFIG_SYS_CSOR2		CONFIG_SYS_CPLD_CSOR
++#define CONFIG_SYS_CS2_FTIM0		CONFIG_SYS_CPLD_FTIM0
++#define CONFIG_SYS_CS2_FTIM1		CONFIG_SYS_CPLD_FTIM1
++#define CONFIG_SYS_CS2_FTIM2		CONFIG_SYS_CPLD_FTIM2
++#define CONFIG_SYS_CS2_FTIM3		CONFIG_SYS_CPLD_FTIM3
+ 
+ /* EEPROM */
+ #define CONFIG_ID_EEPROM
+-- 
+2.1.0.27.g96db324
+
